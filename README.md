@@ -1,4 +1,4 @@
-# Liquid: Language Models are Scalable Multi-modal Generators
+# Liquid: Language Models are Scalable and Unified Multi-modal Generators
 
 
 <div align="center">
