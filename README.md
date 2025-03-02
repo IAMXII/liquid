@@ -1,5 +1,5 @@
 <div align="center">
-<h1>Liquid: Language Models are Scalable and Unified Multi-modal Generators</h1>
+<h1>Liquid: Language Models are Scalable and Unified <br> Multi-modal Generators</h1>
 
 [**Junfeng Wu**](https://wjf5203.github.io/)<sup>1,2</sup> · [**Yi Jiang**](https://enjoyyi.github.io/)<sup>2&dagger;</sup> · [**Chuofan Ma**](https://machuofan.github.io/)<sup>2,3</sup>
 <br>
