@@ -25,22 +25,19 @@
 
 
 ## News
+**2025-03-04:** Text-to-image and visual understanding evaluation scripts for Liquid are released in [EVAL.md](evaluation/EVAL.md).
+
 **2025-02-28:** Paper, demo, model, and [project page](https://foundationvision.github.io/Liquid/) for Liquid are all released.
 
 ## 📑 Open-Source Plan
-
-- Liquid-7B (Mix-pretrained Multimodal Model with T2I and Language Ability)
-  - [ ] Web Demo 
-  - [ ] Inference 
-  - [ ] Checkpoints
-- Liquid-7B-Multiratio (Multi-Ratio Image Generation Model)
-  - [ ] Web Demo 
-  - [ ] Inference 
-  - [ ] Checkpoints
 - Liquid-7B-IT (Instruction Tuned Multimodal Model with Instruction Following Ability)
-  - [ ] Web Demo 
-  - [ ] Inference 
+  - [✅] Web Demo
+  - [✅] Evaluation 
+  - [✅] Checkpoints
+  - [ ] Training Codes
+- Liquid-0.5B~32B-Pretrain (Multimodal extension models of six different scales ranging from 0.5B to 32B across three model families. )
   - [ ] Checkpoints
+
 
 ## 📖 Introduction
 * We present Liquid, an auto-regressive generation paradigm that **seamlessly integrates visual comprehension and generation.**
