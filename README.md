@@ -38,6 +38,42 @@
 - Liquid-0.5B~32B-Pretrain (Multimodal extension models of six different scales ranging from 0.5B to 32B across three model families. )
   - [ ] Checkpoints
 
+# 📽️Inference
+
+Using Liquid for inference or evaluation doesn't require complex environment dependencies. Since it's essentially a HuggingFace format language model, you only need the `transformers` library and some basic components to run it. Refer to [EVAL.md](evaluation/EVAL.md) for recommended versions.
+
+### Run the Gradio Demo locally
+
+If deploying on a GPU with less than 30GB VRAM, you may need to enable `load_in_8bit` in `AutoModelForCausalLM.from_pretrained` in `app.py` for image generation to avoid out-of-memory errors.
+
+```bash
+pip install gradio==4.44.1
+pip install gradio_client==1.3.0
+
+cd evaluation
+python app.py
+```
+
+### Single inference
+
+```bash
+# Engage in pure language dialogue.
+
+python inference_t2t.py  --model_path Junfeng5/Liquid_V1_7B  --prompt  "Write me a poem about Machine Learning."
+
+
+# image understanding
+python inference_i2t.py --model_path Junfeng5/Liquid_V1_7B  --image_path samples/baklava.png   --prompt 'How to make this pastry?'
+
+
+# image generation, add --load_8bit for GPU with less than 30GB VRAM
+python inference_t2i.py   --model_path Junfeng5/Liquid_V1_7B --prompt "young blue dragon with horn lightning in the style of dd fantasy full body"  
+```
+
+
+
+
+
 
 ## 📖 Introduction
 * We present Liquid, an auto-regressive generation paradigm that **seamlessly integrates visual comprehension and generation.**

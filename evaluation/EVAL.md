@@ -24,13 +24,13 @@ wget -P chameleon/ https://huggingface.co/spaces/Junfeng5/Liquid_demo/resolve/ma
 wget -P chameleon/ https://huggingface.co/spaces/Junfeng5/Liquid_demo/resolve/main/chameleon/vqgan.yaml
 
 ```
- 
+
 # Text-to-Image Evaluation
 
 ## GenAI-Bench
 
 ```bash
-cd T2I-Eval
+cd T2I_Eval
 
 # download GenAI-Bench-527 prompts
 wget https://huggingface.co/datasets/zhiqiulin/GenAI-Bench-527/resolve/main/prompts.txt
@@ -59,7 +59,7 @@ python eval_genai_527.py --image_dir $SAVE_PTH
 ## MJHQ-30K
 
 ```bash
-cd T2I-Eval
+cd T2I_Eval
 
 # download MJHQ-30K datasets
 huggingface-cli download  --repo-type dataset --resume-download playgroundai/MJHQ-30K  --local-dir  MJHQ-30K
@@ -82,7 +82,7 @@ bash eval_mjhq.sh
 For model evaluation, please follow this [LLaVA](https://github.com/haotian-liu/LLaVA/blob/main/docs/Evaluation.md) for data preparation.
 
 ```bash
-cd VQA-Eval
+cd VQA_Eval
 
 # TextVQA 44.31%
 bash textvqa.sh
