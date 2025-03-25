@@ -23,8 +23,10 @@
 
 ![teaser](assets/liquid_framework.png)
 
+## 📰 News
 
-## News
+**2025-03-25:** Data processing and model pretraining scripts have been updated in [Data.md](./Data.md) and [TRAIN.md](./TRAIN.md).
+
 **2025-03-04:** Text-to-image and visual understanding evaluation scripts for Liquid are released in [EVAL.md](evaluation/EVAL.md).
 
 **2025-02-28:** Paper, demo, model, and [project page](https://foundationvision.github.io/Liquid/) for Liquid are all released.
@@ -34,7 +36,7 @@
   - [✅] Web Demo
   - [✅] Evaluation 
   - [✅] Checkpoints
-  - [ ] Training Codes
+  - [✅] Training Codes
 - Liquid-0.5B~32B-Pretrain (Multimodal extension models of six different scales ranging from 0.5B to 32B across three model families. )
   - [ ] Checkpoints
 
@@ -71,6 +73,10 @@ python inference_t2i.py   --model_path Junfeng5/Liquid_V1_7B --prompt "young blu
 ```
 
 
+
+## ⚙️ Installation and Training
+
+See [Data.md](./Data.md) and [TRAIN.md](./TRAIN.md).
 
 
 
