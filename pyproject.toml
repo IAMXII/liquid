@@ -26,8 +26,8 @@ train = ["deepspeed==0.13.0", "ninja" ]
 build = ["build", "twine"]
 
 [project.urls]
-"Homepage" = "https://github.com/dvlab-research/MiniGemini"
-"Bug Tracker" = "https://github.com/dvlab-research/MiniGemini/issues"
+"Homepage" = "https://foundationvision.github.io/Liquid/"
+"Bug Tracker" = "https://github.com/FoundationVision/Liquid/issues"
 
 [tool.setuptools.packages.find]
 exclude = ["assets*", "benchmark*", "docs", "dist*", "playground*", "scripts*", "tests*", "data*", "model_zoo*", "work_dirs*", "project*"]

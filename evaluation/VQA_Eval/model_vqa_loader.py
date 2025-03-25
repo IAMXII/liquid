@@ -6,7 +6,6 @@ from tqdm import tqdm
 import shortuuid
 
 from conversation import conv_templates, SeparatorStyle
-# from minigemini.model.builder import load_pretrained_model
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from torch.utils.data import Dataset, DataLoader
 from PIL import ImageFile
