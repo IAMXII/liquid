@@ -1304,7 +1304,8 @@ def train(attn_implementation=None):
             set_z3_leaf_modules(model, [MixtralSparseMoeBlock])
         elif "gemma" in model_args.model_name_or_path:
             # import pdb;pdb.set_trace()
-            model = MiniGeminiGemmaForCausalLM.from_pretrained(
+            model = MiniGeminiGemmaForCausalLM.from_pretrained( ### liuwei
+            # model = MiniGeminiLlamaForCausalLM.from_pretrained(
                 model_args.model_name_or_path,
                 cache_dir=training_args.cache_dir,
                 attn_implementation=attn_implementation,
@@ -1322,7 +1323,8 @@ def train(attn_implementation=None):
     else:
         if "gemma" in model_args.model_name_or_path:
             # import pdb;pdb.set_trace()
-            model = MiniGeminiGemmaForCausalLM.from_pretrained(
+            model = MiniGeminiGemmaForCausalLM.from_pretrained(   ### liuwei
+            # model = MiniGeminiLlamaForCausalLM.from_pretrained(
                 model_args.model_name_or_path,
                 cache_dir=training_args.cache_dir,
                 attn_implementation=attn_implementation,
