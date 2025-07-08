@@ -30,9 +30,9 @@ import torch.nn.functional as F
 from abc import ABC, abstractmethod
 from transformers.deepspeed import is_deepspeed_zero3_enabled
 
-from model.quant import VectorQuantizerM, AttnProjection
-from model.multimodal_projector.builder import build_vision_projector
-from model.multimodal_encoder.builder import build_vision_tower, build_vision_tower_aux
+from liquid.model.quant import VectorQuantizerM, AttnProjection
+from liquid.model.multimodal_projector.builder import build_vision_projector
+from liquid.model.multimodal_encoder.builder import build_vision_tower, build_vision_tower_aux
 from constants import (
     DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN,
     IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_PATCH_TOKEN
