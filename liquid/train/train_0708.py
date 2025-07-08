@@ -45,7 +45,7 @@ from PIL import Image
 from transformers.models.mixtral.modeling_mixtral import MixtralSparseMoeBlock
 from transformers.models.auto.modeling_auto import MODEL_FOR_CAUSAL_LM_MAPPING_NAMES
 from datasets import load_from_disk, concatenate_datasets
-
+from liquid.model.language_model.mini_gemini_gemma import MiniGeminiGemmaForCausalLM
 local_rank = None
 
 
