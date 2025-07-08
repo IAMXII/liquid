@@ -1,4 +1,4 @@
-from liquid.train.train import train_0708
+from liquid.train.train_0708 import train
 import  os
 
 if __name__ == "__main__":
