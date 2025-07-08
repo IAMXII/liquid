@@ -34,19 +34,19 @@ from liquid.model.liquid import MiniGeminiMetaModel, MiniGeminiMetaForCausalLM
 logger = logging.get_logger(__name__)
 
 
-class MiniGeminiConfig(GemmaConfig):
+class MiniGeminiConfig2(GemmaConfig):
     model_type = "mini_gemini"
 
 
 class MiniGeminiGemmaModel(MiniGeminiMetaModel, GemmaModel):
-    config_class = MiniGeminiConfig
+    config_class = MiniGeminiConfig2
 
     def __init__(self, config: GemmaConfig):
         super(MiniGeminiGemmaModel, self).__init__(config)
 
 
 class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
-    config_class = MiniGeminiConfig
+    config_class = MiniGeminiConfig2
 
     def __init__(self, config):
         super(GemmaForCausalLM, self).__init__(config)
@@ -409,5 +409,5 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
         return _inputs
 
 
-AutoConfig.register("mini_gemini", MiniGeminiConfig)
-AutoModelForCausalLM.register(MiniGeminiConfig, MiniGeminiGemmaForCausalLM)
+AutoConfig.register("mini_gemini", MiniGeminiConfig2)
+AutoModelForCausalLM.register(MiniGeminiConfig2, MiniGeminiGemmaForCausalLM)
