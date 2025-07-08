@@ -17,7 +17,7 @@ def main(args):
     llm.generation_config.do_sample = True
     ori_vocabe_size = llm.config.vocab_size
     
-    llm.resize_token_embeddings(new_num_tokens=ori_vocabe_size+vq_codebook_size, mean_resizing=False )
+    llm.resize_token_embeddings(new_num_tokens=ori_vocabe_size+vq_codebook_size)
     
     
     # llm.config.vocab_size = ori_vocabe_size+vq_codebook_size
