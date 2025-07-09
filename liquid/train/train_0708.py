@@ -983,8 +983,8 @@ class DataCollatorForSupervisedDataset(object):
                 ))
             elif sources['data_type'] == 'waypoint_vqa':
                 input_ids, labels = build_vqa_pair_with_vqcode(self.tokenizer, sources)
-                known_vqcodes = [json.loads(s) for s in sources["known_vqcodes"]]
-                future_vqcodes = [json.loads(s) for s in sources["future_vqcodes"]]
+                known_vqcodes = [torch.tensor(json.loads(s)) for s in sources["known_vqcodes"]]
+                future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
                 vqcode = known_vqcodes + future_vqcodes
                 processed_instances.append(dict(
                     input_ids=input_ids,
