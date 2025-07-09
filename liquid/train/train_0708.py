@@ -987,7 +987,8 @@ class DataCollatorForSupervisedDataset(object):
                 future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
                 # print(known_vqcodes[0])
                 vqcode = known_vqcodes + future_vqcodes
-                vqcode = torch.tensor(vqcode)
+                # vqcode = torch.tensor(vqcode)
+                vqcode = torch.stack(vqcode, dim=0)
                 processed_instances.append(dict(
                     input_ids=input_ids,
                     labels=labels,
