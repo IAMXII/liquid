@@ -180,7 +180,7 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
                 output_hidden_states=False,
                 return_dict=False,
                 cache_position=None,
-            )
+            )[0]
             print("multicode_embedding", multicode_embedding)
             print("shape", multicode_embedding.shape)
             image_logits = self.ar_head.linear_head(multicode_embedding).reshape(B, L, K, -1).permute(0, 2, 1, 3)
