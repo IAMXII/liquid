@@ -13,4 +13,5 @@ export RANK=$((RANK_ID * GPUS_PER_NODE))
 export WORLD_SIZE=$((NUM_NODES * GPUS_PER_NODE))
 #export CUDA_LAUNCH_BLOCKING=1
 
-deepspeed --num_gpus=${GPUS_PER_NODE} ${TRAIN_FILE} ${RUN_ARGS}
+#deepspeed --num_gpus=${GPUS_PER_NODE} ${TRAIN_FILE} ${RUN_ARGS}
+deepspeed --num_gpus=${GPUS_PER_NODE} --master_addr=${MASTER_ADDR} --master_port=${MASTER_PORT} --rank=${RANK} --world_size=${WORLD_SIZE} ${TRAIN_FILE} ${RUN_ARGS}
