@@ -87,7 +87,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     instruction_len = len(
         tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0])
-    instruction_len += 256 * 3 + 4
+    instruction_len += 1 * 3 + 4
 
     # 替换每对 <boi><eoi> 中插入 IMAGE_TOKEN_INDEX
     def insert_image_token_placeholders(input_ids):
