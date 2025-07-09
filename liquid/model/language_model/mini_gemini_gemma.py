@@ -142,12 +142,22 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
         image_loss, num_image_tokens = 0.0, 0
         to_image_mask = data_types == 5
         if additional_image_indexs is not None and len(to_image_mask) == len(hidden_states):
-            to_image_states = hidden_states[to_image_mask]
-            shift_image_states = torch.stack([state[s - 1:e - 1] for (s, e), state in zip(additional_image_indexs, to_image_states)])
-            base_tokens = shift_image_states  # [B, L, C]
+            to_image_states = hidden_states[to_image_mask]  # 选出 data_type == 5 的 hidden states
+            shift_image_states = []
+
+            for state, image_index_list in zip(to_image_states, additional_image_indexs):
+                for s, e in image_index_list:
+                    shift_image_states.append(state[s - 1:e - 1])  # 每段图像 token 的 embedding
+
+            shift_image_states = torch.stack(shift_image_states)  # [B', L, C]
+
+            base_tokens = shift_image_states
 
             K = self.ar_head.num_codebooks
             B, L, C = base_tokens.shape
+            print("B", B)
+            print("L", L)
+            print("C", C)
             base_tokens = base_tokens.reshape(B * L, 1, C)
 
             targets = torch.cat(additional_image_labels, dim=0)

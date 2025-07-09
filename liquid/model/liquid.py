@@ -463,6 +463,8 @@ class MiniGeminiMetaForCausalLM(ABC):
                     cur_new_labels = []
                     # import pdb;pdb.set_trace()
                     max_pos_id = 0
+                    image_list = []
+                    image_indexes = []
                     for i in range(num_images + 1):
                         cur_new_input_embeds.append(cur_input_embeds_no_im[i])
                         cur_new_labels.append(cur_labels_noim[i])
@@ -486,16 +488,23 @@ class MiniGeminiMetaForCausalLM(ABC):
                                     # image_token_label = image_token_label.transpose(0, 1).contiguous().view(-1)  # [256]
                                     # cur_new_labels.append(
                                     #     image_token_label.to(device=cur_labels.device, dtype=cur_labels.dtype))
-                                    additional_image_labels.append(image[i])
-                                    additional_image_indexs.append(
+
+                                    # additional_image_labels.append(image[i])
+                                    image_indexes.append(
                                         (cur_new_labels[-1].shape[0],
                                          cur_new_labels[-1].shape[0] + cur_image_features.shape[
                                              0]))
+                                    # additional_image_indexs.append(
+                                    #     (cur_new_labels[-1].shape[0],
+                                    #      cur_new_labels[-1].shape[0] + cur_image_features.shape[
+                                    #          0]))
+
                             cur_new_labels.append(
                                 torch.full((cur_image_features.shape[0],), IGNORE_INDEX, device=cur_labels.device,
                                            dtype=cur_labels.dtype))
                             max_pos_id += cur_image_features.shape[0]
-
+                    additional_image_labels.append(image)
+                    additional_image_indexs.append(image_indexes)
                     cur_new_input_embeds = [x.to(device=cur_input_embeds.device) for x in cur_new_input_embeds]
                     cur_new_input_embeds = torch.cat(cur_new_input_embeds)
                     cur_new_labels = torch.cat(cur_new_labels)
