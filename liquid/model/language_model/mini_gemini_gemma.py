@@ -134,13 +134,17 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
         if labels is not None:
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous()
+            print("shift_logits", shift_logits.shape)
+            print("shift_labels", shift_labels.shape)
+            with open("debug_output.txt", "w") as f:
+                f.write(str(labels))
             loss_fct = CrossEntropyLoss()
             shift_logits = shift_logits.view(-1, self.config.vocab_size)
             shift_labels = shift_labels.view(-1).to(shift_logits.device)
             text_loss = loss_fct(shift_logits, shift_labels)
             num_text_tokens = (shift_labels != -100).sum().item()
-            print("text_loss:", text_loss)
-            print("num_text_tokens:", num_text_tokens)
+            # print("text_loss:", text_loss)
+            # print("num_text_tokens:", num_text_tokens)
 
         # 图像 loss
         image_loss, num_image_tokens = 0.0, 0
@@ -200,11 +204,11 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
             num_image_tokens = image_labels.shape[0]
 
         total = num_text_tokens + num_image_tokens
-        print("image_loss:", image_loss)
-        print("num_image_tokens:", num_image_tokens)
+        # print("image_loss:", image_loss)
+        # print("num_image_tokens:", num_image_tokens)
         # print("total:", total)
         loss = (image_loss * num_image_tokens + text_loss * num_text_tokens) / total
-        print("loss", loss)
+        # print("loss", loss)
         if not return_dict:
             return (loss, logits) + outputs[1:]
 
