@@ -134,10 +134,10 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
         if labels is not None:
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous()
-            print("shift_logits", shift_logits.shape)
-            print("shift_labels", shift_labels.shape)
-            with open("debug_output.txt", "w") as f:
-                f.write(str(labels))
+            # print("shift_logits", shift_logits.shape)
+            # print("shift_labels", shift_labels.shape)
+            # with open("debug_output.txt", "w") as f:
+            #     f.write(str(labels))
             loss_fct = CrossEntropyLoss()
             shift_logits = shift_logits.view(-1, self.config.vocab_size)
             shift_labels = shift_labels.view(-1).to(shift_logits.device)
