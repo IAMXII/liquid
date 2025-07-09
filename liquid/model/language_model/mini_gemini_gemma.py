@@ -181,18 +181,20 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
                 return_dict=False,
                 cache_position=None,
             )[0]
-            print("multicode_embedding", multicode_embedding)
-            print("shape", multicode_embedding.shape)
+            # print("multicode_embedding", multicode_embedding)
+            # print("shape", multicode_embedding.shape)
             image_logits = self.ar_head.linear_head(multicode_embedding).reshape(B, L, K, -1).permute(0, 2, 1, 3)
-
+            print("device", image_logits.device)
             loss_fct = CrossEntropyLoss()
             image_logits = image_logits.reshape(-1, self.ar_head.sub_vocab_size)
             image_labels = image_code_labels.view(-1).to(image_logits.device)
-            print("image_logits", image_logits.shape)
-            print("image_labels", image_labels.shape)
+            # print("image_logits", image_logits.shape)
+            # print("image_labels", image_labels.shape)
             image_softmax_normalizer = image_logits.max(-1).values ** 2
             image_z_loss = 0.00005 * image_softmax_normalizer.mean()
+            print("image_z_loss", image_z_loss)
             image_loss = loss_fct(image_logits, image_labels) + image_z_loss
+            print("image_loss", image_loss)
             num_image_tokens = image_labels.shape[0]
 
         total = num_text_tokens + num_image_tokens
