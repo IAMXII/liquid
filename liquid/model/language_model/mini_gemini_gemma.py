@@ -168,7 +168,7 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
             targets = targets.permute(0, 2, 1).reshape(B * L, K)[:, :-1]
             index_embeddings = torch.stack([self.ar_head.codebooks[i](targets[:, i]) for i in range(K - 1)], dim=1)
             h = torch.cat((base_tokens, index_embeddings), dim=1)
-            print("h", h.shape)
+            # print("h", h.shape)
             multicode_embedding = self.ar_head(
                 input_ids=None,
                 attention_mask=None,
@@ -184,7 +184,7 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
             # print("multicode_embedding", multicode_embedding)
             # print("shape", multicode_embedding.shape)
             image_logits = self.ar_head.linear_head(multicode_embedding).reshape(B, L, K, -1).permute(0, 2, 1, 3)
-            print("device", image_logits.device)
+            # print("device", image_logits.device)
             loss_fct = CrossEntropyLoss()
             image_logits = image_logits.reshape(-1, self.ar_head.sub_vocab_size)
             image_labels = image_code_labels.view(-1).to(image_logits.device)
@@ -192,14 +192,14 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
             # print("image_labels", image_labels.shape)
             image_softmax_normalizer = image_logits.max(-1).values ** 2
             image_z_loss = 0.00005 * image_softmax_normalizer.mean()
-            print("image_z_loss", image_z_loss)
+            # print("image_z_loss", image_z_loss)
             image_loss = loss_fct(image_logits, image_labels) + image_z_loss
-            print("image_loss", image_loss)
+            # print("image_loss", image_loss)
             num_image_tokens = image_labels.shape[0]
 
         total = num_text_tokens + num_image_tokens
         loss = (image_loss * num_image_tokens + text_loss * num_text_tokens) / total
-
+        print("loss", loss)
         if not return_dict:
             return (loss, logits) + outputs[1:]
 
