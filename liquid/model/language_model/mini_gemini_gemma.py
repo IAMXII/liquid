@@ -190,7 +190,8 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
             image_labels = image_code_labels.view(-1).to(image_logits.device)
             print("image_logits", image_logits.shape)
             print("image_labels", image_labels.shape)
-            image_z_loss = 0.00005 * (image_logits.max(-1).values ** 2).mean()
+            image_softmax_normalizer = image_logits.max(-1).values ** 2
+            image_z_loss = 0.00005 * image_softmax_normalizer.mean()
             image_loss = loss_fct(image_logits, image_labels) + image_z_loss
             num_image_tokens = image_labels.shape[0]
 
