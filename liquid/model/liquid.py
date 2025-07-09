@@ -569,6 +569,8 @@ class MiniGeminiMetaForCausalLM(ABC):
                 if _position_ids is None:
                     position_ids = None
                 # import pdb;pdb.set_trace()
+                with open("debug_output.txt", "w") as f:
+                    f.write(str(new_input_embeds.shape))
                 return None, position_ids, attention_mask, past_key_values, new_input_embeds, new_labels, data_types, additional_image_labels, additional_image_indexs
 
             return input_ids, position_ids, attention_mask, past_key_values, None, labels
