@@ -38,7 +38,6 @@ from liquid.constants import (
     IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_PATCH_TOKEN
 )
 
-
 IS_NEW_TRANSFORMERS = transformers.__version__ >= "4.34.0"
 
 
@@ -481,21 +480,17 @@ class MiniGeminiMetaForCausalLM(ABC):
                             ###   input:   describe xxxx: boi 8*[256] (256 embedding) eoi eos
                             ###   labels: -100  -100 -100 -100 -100 -100 -100 -100 -100 eoi eos
                             elif data_type == 5:
-                                if i < 3:
-                                    # 前3张图作为问题图像，不监督
-                                    cur_new_labels.append(torch.full(
-                                        (cur_image_features.shape[0],), IGNORE_INDEX,
-                                        device=cur_labels.device, dtype=cur_labels.dtype
-                                    ))
-                                else:
+                                if i >= 3:
                                     # 后6张图为答案图像，需要监督
-                                    image_token_label = image[i]  # [num_codebook, 256]
-                                    image_token_label = image_token_label.transpose(0, 1).contiguous().view(-1)  # [256]
-                                    cur_new_labels.append(
-                                        image_token_label.to(device=cur_labels.device, dtype=cur_labels.dtype))
+                                    # image_token_label = image[i]  # [num_codebook, 256]
+                                    # image_token_label = image_token_label.transpose(0, 1).contiguous().view(-1)  # [256]
+                                    # cur_new_labels.append(
+                                    #     image_token_label.to(device=cur_labels.device, dtype=cur_labels.dtype))
                                     additional_image_labels.append(image[i])
                                     additional_image_indexs.append(
-                                        (max_pos_id, max_pos_id + cur_image_features.shape[0]))
+                                        (cur_new_labels[-1].shape[0],
+                                         cur_new_labels[-1].shape[0] + cur_image_features.shape[
+                                             0]))
                             cur_new_labels.append(
                                 torch.full((cur_image_features.shape[0],), IGNORE_INDEX, device=cur_labels.device,
                                            dtype=cur_labels.dtype))
@@ -570,8 +565,8 @@ class MiniGeminiMetaForCausalLM(ABC):
             return input_ids, position_ids, attention_mask, past_key_values, None, labels
 
     def prepare_inputs_for_multimodal(
-        self, input_ids, position_ids, attention_mask, 
-        past_key_values, labels, images=None, images_aux=None, data_types=None,
+            self, input_ids, position_ids, attention_mask,
+            past_key_values, labels, images=None, images_aux=None, data_types=None,
     ):
         multi_embedder = self.model.multi_embedder
         # import pdb;pdb.set_trace()
