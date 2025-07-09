@@ -163,14 +163,14 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
             base_tokens = base_tokens.reshape(B * L, 1, C)
 
             targets = torch.cat(additional_image_labels, dim=0)
-            print("targets", targets.shape)
+            # print("targets", targets.shape)
             image_code_labels = targets
             targets = targets.permute(0, 2, 1).reshape(B * L, K)[:, :-1]
             index_embeddings = torch.stack([self.ar_head.codebooks[i](targets[:, i]) for i in range(K - 1)], dim=1)
             h = torch.cat((base_tokens, index_embeddings), dim=1)
-            print("h", h.shape)
-            multicode_embedding = self.ar_head(inputs_embeds=h, return_dict=False)
-            print("multicode_embedding", multicode_embedding.shape)
+            # print("h", h.shape)
+            multicode_embedding = self.ar_head(inputs_embeds=h, return_dict=False)[0]
+            # print("multicode_embedding", multicode_embedding)
             image_logits = self.ar_head.linear_head(multicode_embedding).reshape(B, L, K, -1).permute(0, 2, 1, 3)
 
             loss_fct = CrossEntropyLoss()
