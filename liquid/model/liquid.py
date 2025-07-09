@@ -503,7 +503,7 @@ class MiniGeminiMetaForCausalLM(ABC):
                                 torch.full((cur_image_features.shape[0],), IGNORE_INDEX, device=cur_labels.device,
                                            dtype=cur_labels.dtype))
                             max_pos_id += cur_image_features.shape[0]
-                    additional_image_labels.append(image)
+                    additional_image_labels.append(image[3:])
                     additional_image_indexs.append(image_indexes)
                     cur_new_input_embeds = [x.to(device=cur_input_embeds.device) for x in cur_new_input_embeds]
                     cur_new_input_embeds = torch.cat(cur_new_input_embeds)
