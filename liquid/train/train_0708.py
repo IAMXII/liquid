@@ -985,6 +985,7 @@ class DataCollatorForSupervisedDataset(object):
                 input_ids, labels = build_vqa_pair_with_vqcode(self.tokenizer, sources)
                 known_vqcodes = [torch.tensor(json.loads(s)) for s in sources["known_vqcodes"]]
                 future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
+                print(known_vqcodes[0])
                 vqcode = known_vqcodes + future_vqcodes
                 processed_instances.append(dict(
                     input_ids=input_ids,
