@@ -35,10 +35,10 @@ logger = logging.get_logger(__name__)
 
 
 class MiniGeminiConfig2(GemmaConfig):  # 如果你是继承 GemmaConfig
+    model_type = "mini_gemini"
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.pretraining_tp = 1  # <<< 添加这一行
-
 
 class MiniGeminiGemmaModel(MiniGeminiMetaModel, GemmaModel):
     config_class = MiniGeminiConfig2
