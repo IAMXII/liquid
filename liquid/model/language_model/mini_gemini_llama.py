@@ -156,7 +156,7 @@ class MiniGeminiLlamaForCausalLM(LlamaForCausalLM, MiniGeminiMetaForCausalLM):
                 attentions=outputs.attentions,
             )
 
-        to_image_mask = data_types == 1  # where to get t2i loss in each batch  [True, False, False, True....]
+        to_image_mask = data_types == 5  # where to get t2i loss in each batch  [True, False, False, True....]
 
         if len(additional_image_indexs) > 0 and len(to_image_mask) == len(hidden_states):  # image generation loss
             to_image_states = hidden_states[to_image_mask]

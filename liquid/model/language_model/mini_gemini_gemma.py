@@ -140,7 +140,7 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
 
         # 图像 loss
         image_loss, num_image_tokens = 0.0, 0
-        to_image_mask = data_types == 1
+        to_image_mask = data_types == 5
         if additional_image_indexs is not None and len(to_image_mask) == len(hidden_states):
             to_image_states = hidden_states[to_image_mask]
             shift_image_states = torch.stack([state[s - 1:e - 1] for (s, e), state in zip(additional_image_indexs, to_image_states)])
