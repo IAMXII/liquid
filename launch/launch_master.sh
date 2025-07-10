@@ -5,8 +5,7 @@ export RANK=0
 export WORLD_SIZE=$((NUM_NODES * GPUS_PER_NODE))
 
 echo "准备启动 DeepSpeed 多机训练..."
-deepspeed --hostfile hostfile.txt \
-  --num_gpus=${GPUS_PER_NODE} \
+deepspeed   --num_gpus=${GPUS_PER_NODE} \
   --num_nodes=${NUM_NODES} \
   --master_addr=${MASTER_ADDR} \
   --master_port=${MASTER_PORT} \
