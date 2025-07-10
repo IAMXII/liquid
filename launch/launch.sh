@@ -36,7 +36,7 @@ MASTER_ADDR="10.54.99.213"   # 通常是 node0 的 IP
 MASTER_PORT=29500
 TRAIN_SCRIPT=${TRAIN_FILE}   # 比如 train.py
 RUN_ARGS=${RUN_ARGS}         # 你额外的训练参数，比如 --batch_size 64 等
-
+source ./launch/config.env
 # 节点 0 上启动
 if [[ "$(hostname -I)" =~ "$MASTER_ADDR" ]]; then
   echo "当前为主节点，开始 torchrun 启动..."
