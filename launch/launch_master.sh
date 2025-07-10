@@ -16,7 +16,7 @@ EOF
 chmod +x setup_env.sh
 
 # 批量 ssh 到所有节点执行 setup_env.sh
-NODES=("10.54.99.213" "10.54.108.153")
+NODES=("10.54.108.153")
 echo "开始批量执行环境配置脚本..."
 for node in ${NODES}; do
   echo "配置节点: $node"
