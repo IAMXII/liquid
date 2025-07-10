@@ -8,6 +8,7 @@ conda activate liquid
 export http_proxy=agent.baidu.com:8188
 export https_proxy=agent.baidu.com:8188
 export GIT_SSL_NO_VERIFY=true
+cd /root/paddlejob/workspace/env_run/liuwei/liquid
 source ./launch/config.env
 EOF
 
@@ -15,8 +16,9 @@ EOF
 chmod +x setup_env.sh
 
 # 批量 ssh 到所有节点执行 setup_env.sh
+NODES=("10.54.99.213" "10.54.108.153")
 echo "开始批量执行环境配置脚本..."
-for node in $(cat hostfile.txt); do
+for node in ${NODES}; do
   echo "配置节点: $node"
   # 这里用 scp 先传脚本过去，再 ssh 执行
   scp setup_env.sh $node:~/setup_env.sh
@@ -29,6 +31,7 @@ echo "所有节点环境配置完成。"
 rm setup_env.sh
 
 # 下面是你现有的 deepspeed 启动命令
+source ./launch/config.env
 export MASTER_ADDR=${MASTER_ADDR}
 export MASTER_PORT=${MASTER_PORT}
 export RANK=0
