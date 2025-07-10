@@ -1,6 +1,9 @@
 #!/bin/bash
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate liquid
+export http_proxy=agent.baidu.com:8188
+export https_proxy=agent.baidu.com:8188
+export GIT_SSL_NO_VERIFY=true
 source ./launch/config.env
 
 export MASTER_ADDR=${MASTER_ADDR}
