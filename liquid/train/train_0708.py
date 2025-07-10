@@ -48,7 +48,11 @@ from datasets import load_from_disk, concatenate_datasets
 from liquid.model.language_model.mini_gemini_gemma import MiniGeminiGemmaForCausalLM
 local_rank = None
 
+import os
+import wandb
 
+def is_main_process():
+    return os.environ.get("RANK", "0") == "0"
 def rank0_print(*args):
     if local_rank == 0:
         print(*args)
@@ -202,6 +206,7 @@ class TrainingArguments(transformers.TrainingArguments):
     group_by_modality_length: bool = field(default=False)
     lr_multi: Optional[str] = field(default=None)
     label_smoothing_factor: float = 0.0
+    report_to = "wandb" if is_main_process() else "none"
 
 
 def maybe_zero_3(param, ignore_status=False, name=None):
@@ -1261,10 +1266,16 @@ def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer,
 
 def train(attn_implementation=None):
     global local_rank
-    import os
-
-    if os.environ.get("RANK", "0") != "0":
-        os.environ["WANDB_DISABLED"] = "true"
+    if is_main_process():
+        wandb.init(
+            project="liquid",
+            name="unitok",
+            config={
+                # 可选：记录训练配置
+                "lr": 3e-4,
+                "batch_size": 32,
+            }
+        )
     parser = transformers.HfArgumentParser(
         (ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
