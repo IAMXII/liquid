@@ -1,4 +1,6 @@
 #!/bin/bash
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate liquid
 source ./launch/config.env
 
 export MASTER_ADDR=${MASTER_ADDR}
