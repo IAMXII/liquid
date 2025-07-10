@@ -1,17 +1,15 @@
 #!/bin/bash
-RANK_ID=$1
-if [ -z "$RANK_ID" ]; then
-  echo "Usage: bash launch_train_worker.sh <node_rank>"
-  exit 1
-fi
 
+# 从节点只需设置环境，deepspeed 会远程启动训练进程
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate liquid
+export http_proxy=agent.baidu.com:8188
+export https_proxy=agent.baidu.com:8188
+export GIT_SSL_NO_VERIFY=true
+
+cd /root/paddlejob/workspace/env_run/liuwei/liquid
 source ./launch/config.env
 
-export MASTER_ADDR=${MASTER_ADDR}
-export MASTER_PORT=${MASTER_PORT}
-export RANK=$((RANK_ID * GPUS_PER_NODE))
-export WORLD_SIZE=$((NUM_NODES * GPUS_PER_NODE))
-#export CUDA_LAUNCH_BLOCKING=1
-
-deepspeed --num_gpus=${GPUS_PER_NODE} ${TRAIN_FILE} ${RUN_ARGS}
-#deepspeed --hostfile hostfile.txt --num_gpus=${GPUS_PER_NODE} --num_nodes=${NUM_NODES} --master_addr=${MASTER_ADDR} --master_port=${MASTER_PORT}  ${TRAIN_FILE} ${RUN_ARGS}
+echo "从节点已完成环境配置，等待 deepspeed 主节点连接..."
+# 注意：无需执行任何训练命令，等待主节点启动后自动被拉起
+sleep infinity
