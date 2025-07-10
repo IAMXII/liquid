@@ -250,6 +250,96 @@ def random_choice_t2iprompt_from_list():
     ]
     return random.choice(my_list)
 
+
+###################################################################
+### liuwei
+def format_wp(wp):  # 格式化为 "[x,y]"
+    return f"[{wp[0]:.2f},{wp[1]:.2f}]"
+
+
+def build_vqa_pair_with_vqcode(tokenizer, sources):
+    tokenizer_len = len(tokenizer)
+
+    # 加载 VQ 图像 token（并统一 + offset）
+    def load_vqcode(s):
+        return torch.tensor(json.loads(s)) + tokenizer_len
+
+    known_vqcodes = [load_vqcode(s) for s in sources["known_vqcodes"]]
+    future_vqcodes = [load_vqcode(s) for s in sources["future_vqcodes"]]
+    known_wps = sources["known_waypoints"]
+    future_wps = sources["future_waypoints"]
+
+    # print(known_vqcodes[0].shape)
+    # 构造文本模板（占位用 <boi><eoi>）
+    def make_vqtext(wp):
+        return "<boi><eoi>" + format_wp(wp)
+
+    human_text = "We already know three frames and their waypoints: " + ", ".join(
+        [make_vqtext(wp) for wp in known_wps]
+    ) + ", now predict the next frame, its waypoint is " + ", ".join([format_wp(wp) for wp in future_wps])
+
+    gpt_text = ", ".join([make_vqtext(wp) for wp in future_wps])
+
+    # 构建对话结构
+    from liquid import conversation as conversation_lib
+    conv = conversation_lib.default_conversation.copy()
+    conv.append_message(conv.roles[0], human_text)
+    conv.append_message(conv.roles[1], gpt_text)
+    prompt = conv.get_prompt()
+    human_ids = \
+    tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
+    # gpt_ids = tokenizer(gpt_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
+    human_len = len(human_ids) + 256 * 3 + 4
+
+    input_ids = \
+    tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
+
+    # 替换每对 <boi><eoi> 中间插入 VQ token
+    def insert_vqcodes(input_ids, vqcode_list):
+        output = []
+        i = 0
+        vq_iter = iter(vqcode_list)
+        while i < len(input_ids):
+            token = input_ids[i].item()
+            token_str = tokenizer.convert_ids_to_tokens(token)
+            if token_str == "<boi>":
+                output.append(token)
+                i += 1
+                vq = next(vq_iter)  # vq: [num_codebooks, sequence_length]，例如 [8, 1024]
+
+                # ✅ 平铺展开 VQ token：先按 codebook，再按位置（或按位置再按 codebook）
+                # 通常按顺序：先 codebook0 的 0..1023，codebook1 的 0..1023 ...
+                vq_flat = vq.contiguous().view(-1).tolist()  # [8 * 1024] → list[int]
+
+                output.extend(vq_flat)
+
+                # 跳到 <eoi>
+                while i < len(input_ids):
+                    if tokenizer.convert_ids_to_tokens(input_ids[i].item()) == "<eoi>":
+                        output.append(input_ids[i].item())
+                        i += 1
+                        break
+                    i += 1
+            else:
+                output.append(token)
+                i += 1
+        return torch.tensor(output, dtype=torch.long)
+
+    # print("total length", len(input_ids))
+    all_vqcodes = known_vqcodes + future_vqcodes
+    input_ids = insert_vqcodes(input_ids, all_vqcodes)
+
+    # 构建 labels，屏蔽 human 段
+    # start_idx = len(input_ids)
+    # print("total length with vq",len(input_ids))
+    labels = input_ids.clone()
+    labels[:human_len] = IGNORE_INDEX
+
+    return input_ids, labels
+
+
+###################################################################
+
 @dataclass
 class DataCollatorForSupervisedDataset(object):
     """Collate examples for supervised fine-tuning."""
@@ -265,57 +355,59 @@ class DataCollatorForSupervisedDataset(object):
 
         for sources in instances:
 
-            if sources['data_type']  in ['image_text'] :
-                vqcode = json.loads(sources['vqcode_{}'.format(str(vq_resolution))])
-                vqcode = torch.tensor(vqcode) + len(self.tokenizer)
-                    
-                if np.random.rand() < T2I_ratio : # T2I mode
-                    prompt = random_choice_t2iprompt_from_list()
-                    
-                    if 'multi' in sources['data_type']: # for multi resolution generation
-                        prompt = 'Image Size: Width is {} Height is {}.'.format(sources['width'],sources['height'] )  + prompt
-                    text = sources['text']+prompt
-
-                    if np.random.rand() > 0.9 :
-                        if 'multi' in sources['data_type']:
-                            text =  'Image Size: Width is {} Height is {}. <unconditional>'.format(sources['width'],sources['height'] ) 
-                        else:
-                            text = "<unconditional>"
-                    
-                    text = text+'<boi><eoi><eos>'
-                    conversations = [text]
-                    input_ids = self.tokenizer(
-                            conversations,
-                            return_tensors="pt",
-                            padding="longest",
-                            max_length=self.tokenizer.model_max_length,
-                            truncation=True,
-                        ).input_ids[0]
-                    
-                    instruction_len = len(input_ids[:-2])
-                    input_ids = torch.cat([input_ids[:-2],vqcode,input_ids[-2:]])
-                    
-                else: # caption mode
-                    
-                    caption = sources['text']+'<eos>'
-                    instruction = '<boi><eoi>The caption of this image is:'
-
-                    caption_ids = self.tokenizer( caption,  return_tensors="pt",  padding="longest",  max_length=self.tokenizer.model_max_length,  truncation=True, ).input_ids[0]
-                    instruct_id = self.tokenizer( instruction,  return_tensors="pt",  padding="longest",  max_length=self.tokenizer.model_max_length,  truncation=True, ).input_ids[0]
-
-                    input_ids = torch.cat([instruct_id[:2],
-                                           vqcode,
-                                           instruct_id[2:],
-                                           caption_ids[1:]])
-                    instruction_len = len(input_ids) - len(caption_ids)+1
-
-                targets = input_ids.clone()
-                targets[: instruction_len] = IGNORE_INDEX
-                processed_instances.append(dict(
-                    input_ids=input_ids,
-                    labels=targets,
-                ))
-     
+            # if sources['data_type']  in ['image_text'] :
+            #     vqcode = json.loads(sources['vqcode_{}'.format(str(vq_resolution))])
+            #     vqcode = torch.tensor(vqcode) + len(self.tokenizer)
+            #
+            #     if np.random.rand() < T2I_ratio : # T2I mode
+            #         prompt = random_choice_t2iprompt_from_list()
+            #
+            #         if 'multi' in sources['data_type']: # for multi resolution generation
+            #             prompt = 'Image Size: Width is {} Height is {}.'.format(sources['width'],sources['height'] )  + prompt
+            #         text = sources['text']+prompt
+            #
+            #         if np.random.rand() > 0.9 :
+            #             if 'multi' in sources['data_type']:
+            #                 text =  'Image Size: Width is {} Height is {}. <unconditional>'.format(sources['width'],sources['height'] )
+            #             else:
+            #                 text = "<unconditional>"
+            #
+            #         text = text+'<boi><eoi><eos>'
+            #         conversations = [text]
+            #         input_ids = self.tokenizer(
+            #                 conversations,
+            #                 return_tensors="pt",
+            #                 padding="longest",
+            #                 max_length=self.tokenizer.model_max_length,
+            #                 truncation=True,
+            #             ).input_ids[0]
+            #
+            #         instruction_len = len(input_ids[:-2])
+            #         input_ids = torch.cat([input_ids[:-2],vqcode,input_ids[-2:]])
+            #
+            #     else: # caption mode
+            #
+            #         caption = sources['text']+'<eos>'
+            #         instruction = '<boi><eoi>The caption of this image is:'
+            #
+            #         caption_ids = self.tokenizer( caption,  return_tensors="pt",  padding="longest",  max_length=self.tokenizer.model_max_length,  truncation=True, ).input_ids[0]
+            #         instruct_id = self.tokenizer( instruction,  return_tensors="pt",  padding="longest",  max_length=self.tokenizer.model_max_length,  truncation=True, ).input_ids[0]
+            #
+            #         input_ids = torch.cat([instruct_id[:2],
+            #                                vqcode,
+            #                                instruct_id[2:],
+            #                                caption_ids[1:]])
+            #         instruction_len = len(input_ids) - len(caption_ids)+1
+            #
+            #     targets = input_ids.clone()
+            #     targets[: instruction_len] = IGNORE_INDEX
+            #     processed_instances.append(dict(
+            #         input_ids=input_ids,
+            #         labels=targets,
+            #     ))
+            if sources['data_type'] == 'waypoint_vqa':
+                input_ids, labels = build_vqa_pair_with_vqcode(self.tokenizer, sources)
+                processed_instances.append(dict(input_ids=input_ids, labels=labels))
             else: # text pretrain mode
                 text =  sources['text']
                 assert  text != 'no'
