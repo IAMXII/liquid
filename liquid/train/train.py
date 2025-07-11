@@ -309,9 +309,9 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
 
                 # ✅ 平铺展开 VQ token：先按 codebook，再按位置（或按位置再按 codebook）
                 # 通常按顺序：先 codebook0 的 0..1023，codebook1 的 0..1023 ...
-                vq_flat = vq.contiguous().view(-1).tolist()  # [8 * 1024] → list[int]
+                # vq_flat = vq.contiguous().view(-1).tolist()  # [8 * 1024] → list[int]
 
-                output.extend(vq_flat)
+                output.extend(vq)
 
                 # 跳到 <eoi>
                 while i < len(input_ids):
