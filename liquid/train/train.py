@@ -276,7 +276,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
 
     human_text = "We already know three frames and their waypoints: " + ", ".join(
         [make_vqtext(wp) for wp in known_wps]
-    ) + ", now predict the next frame, its waypoint is " + ", ".join([format_wp(wp) for wp in future_wps])
+    ) + ", now predict the next frame, their waypoints are " + ", ".join([format_wp(wp) for wp in future_wps])
 
     gpt_text = ", ".join([make_vqtext(wp) for wp in future_wps])
 
@@ -290,6 +290,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     # gpt_ids = tokenizer(gpt_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     human_len = len(human_ids) + 256 * 3 + 4
+    print("human_len:", human_len)
 
     input_ids = \
     tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
@@ -328,7 +329,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     # print("total length", len(input_ids))
     all_vqcodes = known_vqcodes + future_vqcodes
     input_ids = insert_vqcodes(input_ids, all_vqcodes)
-
+    print("input:", len(input_ids))
     # 构建 labels，屏蔽 human 段
     # start_idx = len(input_ids)
     # print("total length with vq",len(input_ids))
