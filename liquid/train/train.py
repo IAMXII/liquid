@@ -289,7 +289,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     human_ids = \
     tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     # gpt_ids = tokenizer(gpt_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
-    human_len = len(human_ids) + 256 * 8 * 3 + 4
+    human_len = len(human_ids) + 256 * 8 + 4
     # print("human_len:", human_len)
 
     input_ids = \
