@@ -51,7 +51,7 @@ class DataArguments:
                            metadata={"help": "Path to the training data."})
     lazy_preprocess: bool = False
     is_multimodal: bool = False
-    vq_resolution: str = '512',
+    vq_resolution: str = '256',
     image_folder: Optional[str] = field(default=None)
     image_aspect_ratio: str = 'square'
     cfg_ratio: Optional[float]=0.9,
@@ -289,8 +289,8 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     human_ids = \
     tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     # gpt_ids = tokenizer(gpt_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
-    human_len = len(human_ids) + 256 * 3 + 5
-    print("human_len:", human_len)
+    human_len = len(human_ids) + 256 * 8 * 3 + 4
+    # print("human_len:", human_len)
 
     input_ids = \
     tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
@@ -329,7 +329,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     # print("total length", len(input_ids))
     all_vqcodes = known_vqcodes + future_vqcodes
     input_ids = insert_vqcodes(input_ids, all_vqcodes)
-    print("input:", len(input_ids))
+    # print("input:", len(input_ids))
     # 构建 labels，屏蔽 human 段
     # start_idx = len(input_ids)
     # print("total length with vq",len(input_ids))
