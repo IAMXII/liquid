@@ -78,6 +78,20 @@ def build_vqa_inference_input(tokenizer, sources):
 
     return input_ids.unsqueeze(0), attention_mask # [1, T]
 
+def center_crop_image(ori_image, tgt_width=512, tgt_height=512):
+    Width,Height = ori_image.size
+    factor = min(Width,Height)/min(tgt_width,tgt_height)
+    input_image = ori_image.resize((int(Width/factor),int(Height/factor)), PIL.Image.LANCZOS)
+    resize_width, resize_height = input_image.size   # Get dimensions
+
+    left = (resize_width - tgt_width)//2
+    top = (resize_height - tgt_height)//2
+    right = (resize_width + tgt_width)//2
+    bottom = (resize_height + tgt_height)//2
+    # Crop the center of the image
+    input_image = input_image.crop((left, top, right, bottom))
+    return input_image
+
 
 def main(args):
     temperature = args.temperature
@@ -110,6 +124,7 @@ def main(args):
     with open("000000.jsonl", "r", encoding="utf-8") as f:
         first_line = f.readline()
         sources = json.loads(first_line)
+    pic_path = sources["pic_path"]
     input_ids,attention_mask = build_vqa_inference_input(tokenizer, sources).to("cuda")
 
     # text_inputs = [args.prompt] * 4  # generate 4 samples once
@@ -194,13 +209,39 @@ def main(args):
             vq_token = generated_ids[start:end]
             vq_token_lists.append(vq_token)
 
+        pic_ori = os.path.basename(pic_path)
+        pic_num = pic_ori.split(".")[0]
+        pic_num = int(pic_num)
+        pic_dir = os.path.dirname(pic_path)
         # 5. 解码每个 VQ token 块为图像
         for i, vq_token in enumerate(vq_token_lists):
-            # 假设 vocab_offset = len(tokenizer)
+            # Step 1: 解码图像 token
             vq_token = vq_token - len(tokenizer)
             vq_token = torch.clamp(vq_token, 0, 8191)
             rec_img = image_tokenizer.pil_from_img_toks(vq_token)
-            rec_img.save(f"{image_save_pth}/sample_{i}.jpg")
+
+            # Step 2: 构造原图路径（根据 pic_num + i 命名）
+            k = pic_num + i
+            ori_path = os.path.join(pic_dir, f"{k:05d}.jpg")
+
+            # Step 3: 读取原图
+            if not os.path.exists(ori_path):
+                print(f"⚠️ 原图不存在: {ori_path}")
+                continue
+            ori_img = Image.open(ori_path).convert("RGB")
+
+            # Step 4: 尺寸对齐（如果需要）
+
+            ori_img = center_crop_image(ori_img,tgt_width=256,tgt_height=256)
+
+            # Step 5: 拼接图像（横向）
+            w, h = ori_img.size
+            combined = Image.new("RGB", (w * 2, h))
+            combined.paste(ori_img, (0, 0))
+            combined.paste(rec_img, (w, 0))
+
+            # Step 6: 保存拼接图
+            combined.save(f"{image_save_pth}/compare_{i}.jpg")
 
 
 if __name__ == '__main__':
