@@ -259,7 +259,7 @@ def format_wp(wp):  # 格式化为 "[x,y]"
 
 def build_vqa_pair_with_vqcode(tokenizer, sources):
     tokenizer_len = len(tokenizer)
-    print(f"Tokenizer len: {tokenizer_len}")
+    # print(f"Tokenizer len: {tokenizer_len}")
     # 加载 VQ 图像 token（并统一 + offset）
     def load_vqcode(s):
         return torch.tensor(json.loads(s)) + tokenizer_len
