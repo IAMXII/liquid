@@ -200,7 +200,7 @@ def main(args):
         pred_logits = []
         image_insert_pos = [271 * i + 1 for i in range(6)]
         image_index = 0
-        total_steps = 1626
+        total_steps = 257
         (
             input_ids,
             position_ids,
@@ -270,7 +270,7 @@ def main(args):
             # input_multi_ids = torch.stack(pred_tokens, dim=-1)
             # fake_id = torch.zeros_like(input_ids[:, :1])
             # input_ids = torch.cat([input_ids, fake_id], dim=-1)  # add fake id for cache
-
+            model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device=input_ids.device)
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs,
                 model_kwargs,
