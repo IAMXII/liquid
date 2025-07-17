@@ -70,6 +70,7 @@ def main(args):
                     output_attentions=False,
                     output_hidden_states=False,
                 )
+                # vqllm.generate(**model_kwargs)
             else:
                 outputs = vqllm(
                     **model_inputs,

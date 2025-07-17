@@ -12,7 +12,7 @@ def main(args):
     vq_codebook_size = args.num_add_token
 
     llm = AutoModelForCausalLM.from_pretrained(LLM_pth)
-    tokenizer = AutoTokenizer.from_pretrained(LLM_pth )
+    tokenizer = AutoTokenizer.from_pretrained(LLM_pth)
 
     llm.generation_config.do_sample = True
     ori_vocabe_size = llm.config.vocab_size
