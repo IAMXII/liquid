@@ -86,7 +86,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     labels = input_ids.clone()
     labels[:instruction_len] = IGNORE_INDEX
 
-    return input_ids, labels
+    return input_ids.unsqueeze(0).to("cuda"), labels
 
 def center_crop_image(ori_image, tgt_width=512, tgt_height=512):
     Width, Height = ori_image.size
@@ -190,7 +190,7 @@ def main(args):
 
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': False}
-        cur_len = input_ids.shape[1]
+        cur_len = input_ids.shape[1]+256*3
         model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
         model_kwargs["cache_position"] = torch.arange(cur_len, device=input_ids.device)
 
