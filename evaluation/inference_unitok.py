@@ -215,7 +215,7 @@ def main(args):
                 attention_mask = attention_mask,
                 past_key_values=None,
                 labels=labels,
-                image=vqcode,
+                images=vqcode,
                 images_aux=None,
                 data_types=5
             )
