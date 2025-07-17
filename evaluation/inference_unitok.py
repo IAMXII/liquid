@@ -86,7 +86,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     labels = input_ids.clone()
     labels[:instruction_len] = IGNORE_INDEX
 
-    return input_ids.unsqueeze(0).to("cuda"), labels
+    return input_ids.unsqueeze(0).to("cuda"), labels.unsqueeze(0).to("cuda")
 
 def center_crop_image(ori_image, tgt_width=512, tgt_height=512):
     Width, Height = ori_image.size
