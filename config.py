@@ -7,7 +7,7 @@ from tap import Tap
 from typing import Optional, Union
 from collections import OrderedDict
 
-from utils import dist
+import dist
 
 
 class Args(Tap):

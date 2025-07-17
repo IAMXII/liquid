@@ -154,7 +154,7 @@ def main(args):
     # vqgan_cfg_path = "model/vqgan_imagenet_f16_1024/configs/model.yaml"
     # vqgan_ckpt_path = "model/vqgan_imagenet_f16_1024/ckpts/last.ckpt"
     # image_tokenizer = ImageTokenizer(cfg_path=vqgan_cfg_path, ckpt_path=vqgan_ckpt_path, device="cuda:0")
-    unitok_path = "./unitok_tokenizer"
+    unitok_path = "../unitok/unitok_tokenizer"
     print('loading vq model ...')
     ckpt = torch.load(unitok_path, map_location='cpu')
     vae_cfg = Args()
