@@ -198,29 +198,32 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-
-        for _ in tqdm(range(1626)):
+        image_insert_pos = [271 * i + 1 for i in range(6)]
+        image_index = 0
+        total_steps = 1626
+        (
+            input_ids,
+            position_ids,
+            attention_mask,
+            past_key_values,
+            inputs_embeds,
+            labels,
+            data_types,
+            additional_image_labels,
+            additional_image_indexs
+        ) = vqllm.prepare_inputs_labels_for_multimodal(
+            input_ids=input_ids,
+            position_ids=None,
+            attention_mask=attention_mask,
+            past_key_values=None,
+            labels=labels,
+            images=vqcode,
+            images_aux=None,
+            data_types=[5]
+        )
+        for i in tqdm(range(1626)):
             # model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
-            (
-                input_ids,
-                position_ids,
-                attention_mask,
-                past_key_values,
-                inputs_embeds,
-                labels,
-                data_types,
-                additional_image_labels,
-                additional_image_indexs
-            ) = vqllm.prepare_inputs_labels_for_multimodal(
-                input_ids=input_ids,
-                position_ids=None,
-                attention_mask = attention_mask,
-                past_key_values=None,
-                labels=labels,
-                images=vqcode,
-                images_aux=None,
-                data_types=[5]
-            )
+
             outputs = vqllm.T2I_forward_withcache(
                     input_ids=input_ids,
                     position_ids=position_ids,
@@ -234,6 +237,8 @@ def main(args):
                 )
             # print(outputs.keys())
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # [1, 1, vocab_size]
+            # inputs_embeds = torch.cat((inputs_embeds,next_embed), dim=1)
+
             indices_arhead = []
             for i_head in range(num_codebooks):
                 ar_next_embed = vqllm.ar_head(
@@ -258,11 +263,13 @@ def main(args):
                 if i_head < num_codebooks - 1:
                     predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
                     next_embed = torch.cat([next_embed, predicted_embed], dim=1)
-
+            print("next_embeds:", next_embed.shape)
             pred_tokens.append(torch.cat(indices_arhead, dim=1))  # [numcodebook,bz*2]
-            input_multi_ids = torch.stack(pred_tokens, dim=-1)
-            fake_id = torch.zeros_like(input_ids[:, :1])
-            input_ids = torch.cat([input_ids, fake_id], dim=-1)  # add fake id for cache
+            print("len:",len(pred_tokens))
+            print("pred_tokens:", pred_tokens[0].shape)
+            # input_multi_ids = torch.stack(pred_tokens, dim=-1)
+            # fake_id = torch.zeros_like(input_ids[:, :1])
+            # input_ids = torch.cat([input_ids, fake_id], dim=-1)  # add fake id for cache
 
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs,
@@ -270,7 +277,7 @@ def main(args):
                 is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
 
-            input_ids = torch.cat([input_ids, next_token], dim=-1)
+            # input_ids = torch.cat([input_ids, next_token], dim=-1)
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
