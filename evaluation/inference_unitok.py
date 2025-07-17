@@ -42,7 +42,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
                  ", now predict the next frames, their waypoints are " + \
                  ", ".join([format_wp(wp) for wp in future_wps])
 
-    gpt_text = ", ".join([make_vqtext(wp) for wp in future_wps])
+    gpt_text = ""
 
     conv = conversation_lib.default_conversation.copy()
     conv.append_message(conv.roles[0], human_text)
