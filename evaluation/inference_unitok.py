@@ -194,7 +194,7 @@ def main(args):
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': False}
         cur_len = input_ids.shape[1]+256*3
         model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
-        model_kwargs["cache_position"] = torch.arange(cur_len, device=input_ids.device)
+        model_kwargs["cache_position"] = torch.arange(cur_len, device="cuda:0")
 
         pred_tokens = []
         pred_logits = []
