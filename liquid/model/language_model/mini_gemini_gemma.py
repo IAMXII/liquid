@@ -415,7 +415,9 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         if input_multi_ids is not None:
+            print("input_multi_ids", input_multi_ids.shape)
             inputs_image_embeds = self.model.multi_embedder(input_multi_ids[:, :, -1:])  # [B,1,C]
+
             inputs_embeds = inputs_image_embeds
             input_ids = None  # [B,1]
         else:
