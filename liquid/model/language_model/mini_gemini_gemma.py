@@ -398,7 +398,6 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
         inputs_embeds: Optional[torch.FloatTensor] = None,
         labels: Optional[torch.LongTensor] = None,
         input_multi_ids: torch.LongTensor = None,
-        inputs_embeds=None,
         data_types: torch.LongTensor = None,
         use_cache: Optional[bool] = None,
         cache_position: Optional[torch.LongTensor] = None,
