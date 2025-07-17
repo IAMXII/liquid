@@ -180,6 +180,7 @@ def main(args):
     vqcode = known_vqcodes
     # vqcode = torch.tensor(vqcode)
     vqcode = torch.stack(vqcode, dim=0)
+    vqcode = vqcode.unsqueeze(0)
     # processed_instances.append(dict(
     #     input_ids=input_ids,
     #     labels=labels,
