@@ -221,7 +221,7 @@ def main(args):
             images_aux=None,
             data_types=[5]
         )
-        for i in tqdm(range(1626)):
+        for i in tqdm(range(257)):
             # model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
 
             outputs = vqllm.T2I_forward_withcache(
@@ -237,7 +237,7 @@ def main(args):
                 )
             # print(outputs.keys())
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # [1, 1, vocab_size]
-            # inputs_embeds = torch.cat((inputs_embeds,next_embed), dim=1)
+            inputs_embeds = torch.cat((inputs_embeds,next_embed), dim=1)
             print("next_embeds:", next_embed.shape)
             indices_arhead = []
             for i_head in range(num_codebooks):
@@ -302,7 +302,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 271
+        boi_pos = np.arange(1) * 271
         img_logits = []
         for pos in boi_pos:
             start = pos
@@ -325,7 +325,7 @@ def main(args):
         for i in range(len(boi_pos)):
             start = boi_pos[i] + 1
             end = start + 256
-            vq_token = generated_ids[start:end]
+            vq_token = generated_ids[:,start:end]
             vq_token_lists.append(vq_token)
 
         # pic_ori = os.path.basename(pic_path)
