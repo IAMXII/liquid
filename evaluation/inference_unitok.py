@@ -181,6 +181,7 @@ def main(args):
     # vqcode = torch.tensor(vqcode)
     vqcode = torch.stack(vqcode, dim=0)
     vqcode = vqcode.unsqueeze(0)
+    vqcode = vqcode.to("cuda")
     # processed_instances.append(dict(
     #     input_ids=input_ids,
     #     labels=labels,
