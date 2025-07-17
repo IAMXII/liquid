@@ -217,7 +217,7 @@ def main(args):
                 labels=labels,
                 images=vqcode,
                 images_aux=None,
-                data_types=5
+                data_types=[5]
             )
             outputs = vqllm.T2I_forward_withcache(
                     input_ids=input_ids,
