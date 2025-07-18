@@ -213,7 +213,7 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [271 * i for i in range(6)]
+        image_insert_pos = [271 * i+1 for i in range(6)]
         image_index = 0
         total_steps = 1626
         (
@@ -259,7 +259,7 @@ def main(args):
             # print(outputs.keys())
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # [1, 1, vocab_size]
             inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
-            print("next_embeds:", next_embed.shape)
+            print("next_embeds:", next_embed)
             indices_arhead = []
             for i_head in range(num_codebooks):
                 ar_next_embed = vqllm.ar_head(
@@ -338,7 +338,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 271
+        boi_pos = np.arange(6) * 271+1
         img_logits = []
         for pos in boi_pos:
             start = pos
