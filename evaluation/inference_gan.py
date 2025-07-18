@@ -59,7 +59,7 @@ def build_vqa_inference_input(tokenizer, sources):
             token_str = tokenizer.convert_ids_to_tokens(token)
             if token_str == "<boi>":
                 output_ids.append(token)
-                output_mask.append(1)
+                output_mask.append(0)
                 i += 1
 
                 vq = next(vq_iter)  # tensor: [8*256]
@@ -71,7 +71,7 @@ def build_vqa_inference_input(tokenizer, sources):
                 while i < len(input_ids):
                     if tokenizer.convert_ids_to_tokens(input_ids[i]) == "<eoi>":
                         output_ids.append(input_ids[i])
-                        output_mask.append(1)
+                        output_mask.append(0)
                         i += 1
                         break
                     i += 1

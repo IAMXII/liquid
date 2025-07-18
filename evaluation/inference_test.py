@@ -233,7 +233,7 @@ def main(args):
             images_aux=None,
             data_types=[5]
         )
-        for i in tqdm(range(total_steps)):
+        for i in tqdm(range(257)):
             # model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             seq_len = inputs_embeds.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(
@@ -365,6 +365,7 @@ def main(args):
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
         for i, vq_token in enumerate(vq_token_lists):
             new_gen_ids = vq_token.unsqueeze(0).to('cuda')
+            print("new_gen_ids:", new_gen_ids.shape)
             rec_img = vq_model.idx_to_img(new_gen_ids)
             # rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
             ori_img = vq_model.idx_to_img(future_vqcodes[i])
