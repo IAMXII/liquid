@@ -169,7 +169,7 @@ def main(args):
     with open("/data/tempdata_val/000000.jsonl", "r", encoding="utf-8") as f:
         sources = json.loads(f.readline())
         future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
-        gt_img_tokens = torch.cat([future_vqcodes[0]], dim=0).to("cuda")  # [6*256]
+        gt_img_tokens = torch.cat(future_vqcodes, dim=0).to("cuda")  # [6*256]
 
     # pic_path = sources["pic_path"]
     # input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
