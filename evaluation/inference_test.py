@@ -52,7 +52,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     prompt = conv.get_prompt()
 
     input_ids = \
-    tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
+        tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     instruction_len = len(
         tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0])
     instruction_len += 1 * 3 + 4
@@ -89,6 +89,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     labels[:instruction_len] = IGNORE_INDEX
 
     return input_ids.unsqueeze(0).to("cuda"), labels.unsqueeze(0).to("cuda")
+
 
 def center_crop_image(ori_image, tgt_width=512, tgt_height=512):
     Width, Height = ori_image.size
@@ -206,7 +207,7 @@ def main(args):
     new_input_ids = torch.tensor([new_ids], dtype=input_ids.dtype, device=input_ids.device)
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': False}
-        cur_len = input_ids.shape[1]+256*3
+        cur_len = input_ids.shape[1] + 256 * 3
         model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
         model_kwargs["cache_position"] = torch.arange(cur_len, device="cuda:0")
 
@@ -245,19 +246,19 @@ def main(args):
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
 
             outputs = vqllm.T2I_forward_withcache(
-                    input_ids=input_ids,
-                    position_ids=position_ids,
-                    attention_mask=attention_mask,
-                    past_key_values=past_key_values,
-                    input_multi_ids=None,
-                    inputs_embeds=inputs_embeds,
-                    return_dict=True,
-                    output_attentions=False,
-                    output_hidden_states=False,
-                )
+                input_ids=input_ids,
+                position_ids=position_ids,
+                attention_mask=attention_mask,
+                past_key_values=past_key_values,
+                input_multi_ids=None,
+                inputs_embeds=inputs_embeds,
+                return_dict=True,
+                output_attentions=False,
+                output_hidden_states=False,
+            )
             # print(outputs.keys())
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # [1, 1, vocab_size]
-            inputs_embeds = torch.cat((inputs_embeds,next_embed), dim=1)
+            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
             print("next_embeds:", next_embed.shape)
             indices_arhead = []
             for i_head in range(num_codebooks):
@@ -279,7 +280,7 @@ def main(args):
                 #     next_token = torch.cat([half_next_token, half_next_token])  # [bz,1]
                 # else:
                 next_token, next_prob = sample(next_token_logits, **sampling_kwargs)
-                    # pred_tokens.append(next_token)
+                # pred_tokens.append(next_token)
                 indices_arhead.append(next_token)
                 if i_head < num_codebooks - 1:
                     predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
@@ -287,7 +288,7 @@ def main(args):
             # print("next_embeds:", next_embed.shape)
             pred_logits.append(next_token_logits)
             pred_tokens.append(torch.cat(indices_arhead, dim=1))  # [numcodebook,bz*2]
-            print("len:",len(pred_tokens))
+            print("len:", len(pred_tokens))
             print("pred_tokens:", pred_tokens[0].shape)
             # input_multi_ids = torch.stack(pred_tokens, dim=-1)
             # fake_id = torch.zeros_like(input_ids[:, :1])
@@ -302,9 +303,9 @@ def main(args):
             if in_image_range:
                 new_input_ids = torch.cat([new_input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]]).to("cuda")], dim=-1)
             else:
-                if i in image_insert_pos-1:
+                if i in [x - 1 for x in image_insert_pos]:
                     next_token = torch.tensor([[7]]).to("cuda")
-                elif i in image_insert_pos+256:
+                elif i in [x + 256 for x in image_insert_pos]:
                     next_token = torch.tensor([[8]]).to("cuda")
                 new_input_ids = torch.cat([new_input_ids, next_token], dim=-1)
 
@@ -352,7 +353,7 @@ def main(args):
         #     f"Shape mismatch: img_logits {img_logits.shape} vs gt_img_tokens {gt_img_tokens.shape}"
         # print("img shape: ", img_logits.shape)
         # image_ce_loss = criterion(img_logits.reshape(-1, 264192), gt_img_tokens.view(-1))
-        image_ce_loss = criterion(img_logits.reshape(-1,4096), gt_img_tokens.view(-1))
+        image_ce_loss = criterion(img_logits.reshape(-1, 4096), gt_img_tokens.view(-1))
         print("📉 Average Image CrossEntropy Loss:", image_ce_loss.item())
 
         # ====== 解码图像 & 可视化对比 ======
@@ -360,7 +361,7 @@ def main(args):
         for i in range(len(boi_pos)):
             start = boi_pos[i] + 1
             end = start + 256
-            vq_token = generated_ids[start:end,:].permute(1,0)
+            vq_token = generated_ids[start:end, :].permute(1, 0)
             vq_token_lists.append(vq_token)
 
         # pic_ori = os.path.basename(pic_path)
@@ -414,5 +415,3 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     main(args)
-
-
