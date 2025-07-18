@@ -267,7 +267,7 @@ def main(args):
                     return_dict=False,
                 )
                 next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
-                print("next_token_logits:", next_token_logits.shape)
+                # print("next_token_logits:", next_token_logits.shape)
                 pred_logits.append(next_token_logits)
                 # if cfg_scale > 1:
                 #     cond_logits, uncond_logits = torch.split(next_token_logits, len(next_token_logits) // 2, dim=0)
@@ -283,7 +283,7 @@ def main(args):
                     predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
                     next_embed = torch.cat([next_embed, predicted_embed], dim=1)
             # print("next_embeds:", next_embed.shape)
-            pred_logits = torch.cat(pred_logits, dim=0)
+            pred_logits = pred_logits[-1]
             pred_tokens.append(torch.cat(indices_arhead, dim=1))  # [numcodebook,bz*2]
             print("len:",len(pred_tokens))
             print("pred_tokens:", pred_tokens[0].shape)
@@ -315,8 +315,9 @@ def main(args):
         print("pred_logits:",len(pred_logits))
         print("pred_logits:", pred_logits[0].shape)
         generated_ids = torch.cat(pred_tokens, dim=1)[0]  # [T]
-        full_logits = torch.cat(pred_logits, dim=1)  # [1, T, vocab_size]
-
+        full_logits = torch.cat(pred_logits, dim=0)  # [1, T, vocab_size]
+        full_logits = full_logits.permute(1, 0, 2)  # shape: [X, B, Y]
+        # full_logits = full_logits.reshape(-1, full_logits.size(-1))  # shape: [X*B, Y]
         # ====== 提取图像 token 段 ======
         # boi_token_id = tokenizer.convert_tokens_to_ids("<boi>")
         # # print("gen:", generated_ids)
@@ -331,7 +332,7 @@ def main(args):
         for pos in boi_pos:
             start = pos
             end = start + 256
-            img_logits.append(full_logits[0, start:end])  # 每张256个 token
+            img_logits.append(full_logits[:, start:end])  # 每张256个 token
 
         img_logits = torch.stack(img_logits, dim=0)  # [6, 256, vocab]
         criterion = CrossEntropyLoss()
@@ -341,7 +342,7 @@ def main(args):
             f"Shape mismatch: img_logits {img_logits.shape} vs gt_img_tokens {gt_img_tokens.shape}"
         print("img shape: ", img_logits.shape)
         # image_ce_loss = criterion(img_logits.reshape(-1, 264192), gt_img_tokens.view(-1))
-        image_ce_loss = criterion(img_logits.reshape(-1,32768), gt_img_tokens.view(-1))
+        image_ce_loss = criterion(img_logits.reshape(-1,4096), gt_img_tokens.view(-1))
         print("📉 Average Image CrossEntropy Loss:", image_ce_loss.item())
 
         # ====== 解码图像 & 可视化对比 ======
