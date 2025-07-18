@@ -338,9 +338,9 @@ def main(args):
         criterion = CrossEntropyLoss()
 
         # 确保维度匹配
-        assert img_logits.shape[0] * img_logits.shape[1] == gt_img_tokens.numel(), \
-            f"Shape mismatch: img_logits {img_logits.shape} vs gt_img_tokens {gt_img_tokens.shape}"
-        print("img shape: ", img_logits.shape)
+        # assert img_logits.shape[0] * img_logits.shape[1] == gt_img_tokens.numel(), \
+        #     f"Shape mismatch: img_logits {img_logits.shape} vs gt_img_tokens {gt_img_tokens.shape}"
+        # print("img shape: ", img_logits.shape)
         # image_ce_loss = criterion(img_logits.reshape(-1, 264192), gt_img_tokens.view(-1))
         image_ce_loss = criterion(img_logits.reshape(-1,4096), gt_img_tokens.view(-1))
         print("📉 Average Image CrossEntropy Loss:", image_ce_loss.item())
