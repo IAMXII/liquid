@@ -189,7 +189,7 @@ def main(args):
     #     data_type=5
     # ))
     attention_mask = input_ids.ne(tokenizer.pad_token_id)
-
+    input_multi_ids = input_ids.clone()
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': False}
         cur_len = input_ids.shape[1]+256*3
@@ -227,9 +227,9 @@ def main(args):
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(
                 0)  # shape: [1, seq_len]
             if i==0:
-                attention_mask = torch.cat([attention_mask, torch.tensor([0]).to("cuda")])
+                attention_mask = torch.cat([attention_mask, torch.tensor([[0]]).to("cuda")])
             else:
-                attention_mask = torch.cat([attention_mask, torch.tensor([1]).to("cuda")])
+                attention_mask = torch.cat([attention_mask, torch.tensor([[1]]).to("cuda")])
             outputs = vqllm.T2I_forward_withcache(
                     input_ids=input_ids,
                     position_ids=position_ids,
