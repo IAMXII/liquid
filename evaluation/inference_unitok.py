@@ -350,7 +350,7 @@ def main(args):
         for i in range(len(boi_pos)):
             start = boi_pos[i] + 1
             end = start + 256
-            vq_token = generated_ids[:,start:end]
+            vq_token = generated_ids[start:end]
             vq_token_lists.append(vq_token)
 
         # pic_ori = os.path.basename(pic_path)
