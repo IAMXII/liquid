@@ -283,7 +283,7 @@ def main(args):
                     predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
                     next_embed = torch.cat([next_embed, predicted_embed], dim=1)
             # print("next_embeds:", next_embed.shape)
-            pred_logits = pred_logits[-1]
+            pred_logits.append(next_token_logits)
             pred_tokens.append(torch.cat(indices_arhead, dim=1))  # [numcodebook,bz*2]
             print("len:",len(pred_tokens))
             print("pred_tokens:", pred_tokens[0].shape)
