@@ -189,7 +189,19 @@ def main(args):
     #     data_type=5
     # ))
     attention_mask = input_ids.ne(tokenizer.pad_token_id)
-    input_multi_ids = input_ids.clone()
+    input_ids_flat = input_ids[0]
+
+    # 新 tensor 列表
+    new_ids = []
+
+    for token in input_ids_flat:
+        if token.item() == IMAGE_TOKEN_INDEX:
+            new_ids.extend([IMAGE_TOKEN_INDEX] * 256)
+        else:
+            new_ids.append(token.item())
+
+    # 转回 tensor，加上 batch 维度
+    new_input_ids = torch.tensor([new_ids], dtype=input_ids.dtype, device=input_ids.device)
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': False}
         cur_len = input_ids.shape[1]+256*3
@@ -226,6 +238,7 @@ def main(args):
             seq_len = inputs_embeds.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(
                 0)  # shape: [1, seq_len]
+            print("attention mask:",attention_mask)
             if i==0:
                 attention_mask = torch.cat([attention_mask, torch.tensor([[0]]).to("cuda")], dim=1)
             else:
