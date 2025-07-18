@@ -286,11 +286,12 @@ def main(args):
                     predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
                     next_embed = torch.cat([next_embed, predicted_embed], dim=1)
             # print("next_embeds:", next_embed.shape)
-            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
+            fake_id = torch.zeros_like(next_embed).to(next_embed.device)
+            inputs_embeds = torch.cat((inputs_embeds, fake_id), dim=1)
             pred_logits.append(next_token_logits)
             pred_tokens.append(torch.cat(indices_arhead, dim=1))  # [numcodebook,bz*2]
-            print("len:", len(pred_tokens))
-            print("pred_tokens:", pred_tokens[0].shape)
+            # print("len:", len(pred_tokens))
+            # print("pred_tokens:", pred_tokens[0].shape)
             # input_multi_ids = torch.stack(pred_tokens, dim=-1)
             # fake_id = torch.zeros_like(input_ids[:, :1])
             # input_ids = torch.cat([input_ids, fake_id], dim=-1)  # add fake id for cache
@@ -372,6 +373,7 @@ def main(args):
         # pred_vqcodes = pred_vqcodes - len(tokenizer)
         # pred_vqcodes = torch.clamp(pred_vqcodes, 0, 8191)
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
+        print("equal:",vq_token_lists[0]==vq_token_lists[1])
         for i, vq_token in enumerate(vq_token_lists):
             new_gen_ids = vq_token.unsqueeze(0).to('cuda')
             print("new_gen_ids:", new_gen_ids.shape)
