@@ -333,7 +333,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(1) * 271
+        boi_pos = np.arange(6) * 271
         img_logits = []
         for pos in boi_pos:
             start = pos
