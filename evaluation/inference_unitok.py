@@ -167,7 +167,7 @@ def main(args):
     with open("/data/tempdata_val/000000.jsonl", "r", encoding="utf-8") as f:
         sources = json.loads(f.readline())
         future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
-        gt_img_tokens = torch.cat(future_vqcodes, dim=0).to("cuda")  # [6*256]
+        gt_img_tokens = torch.cat([future_vqcodes[0]], dim=0).to("cuda")  # [6*256]
 
     # pic_path = sources["pic_path"]
     # input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
@@ -282,6 +282,7 @@ def main(args):
                     predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
                     next_embed = torch.cat([next_embed, predicted_embed], dim=1)
             # print("next_embeds:", next_embed.shape)
+            pred_logits = torch.cat(pred_logits, dim=0)
             pred_tokens.append(torch.cat(indices_arhead, dim=1))  # [numcodebook,bz*2]
             print("len:",len(pred_tokens))
             print("pred_tokens:", pred_tokens[0].shape)
