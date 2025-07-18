@@ -302,6 +302,10 @@ def main(args):
             if in_image_range:
                 new_input_ids = torch.cat([new_input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]]).to("cuda")], dim=-1)
             else:
+                if i in image_insert_pos-1:
+                    next_token = torch.tensor([[7]]).to("cuda")
+                elif i in image_insert_pos+256:
+                    next_token = torch.tensor([[8]]).to("cuda")
                 new_input_ids = torch.cat([new_input_ids, next_token], dim=-1)
 
             model_kwargs = vqllm._update_model_kwargs_for_generation(
