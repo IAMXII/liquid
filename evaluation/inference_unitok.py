@@ -239,10 +239,9 @@ def main(args):
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(
                 0)  # shape: [1, seq_len]
             # print("attention mask:",attention_mask)
-            if i==0:
-                attention_mask = torch.cat([attention_mask, torch.tensor([[False]]).to("cuda")], dim=1)
-            else:
-                attention_mask = torch.cat([attention_mask, torch.tensor([[True]]).to("cuda")],dim=1)
+
+            attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
+
             outputs = vqllm.T2I_forward_withcache(
                     input_ids=input_ids,
                     position_ids=position_ids,
@@ -295,8 +294,10 @@ def main(args):
                 model_kwargs,
                 is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
-
-            # input_ids = torch.cat([input_ids, next_token], dim=-1)
+            if i==0:
+                new_input_ids = torch.cat([input_ids, next_token], dim=-1)
+            else:
+                new_input_ids = torch.cat([input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]])], dim=-1)
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
