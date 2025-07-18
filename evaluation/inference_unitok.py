@@ -312,9 +312,9 @@ def main(args):
         # print("gen:", generated_ids)
         # print("gen shape:", generated_ids.shape)
         # ====== 生成后处理 ======
-        print("pred_logits:",len(pred_logits))
-        print("pred_logits:", pred_logits[0].shape)
-        generated_ids = torch.cat(pred_tokens, dim=1)[0]  # [T]
+        # print("pred_logits:",len(pred_logits))
+        # print("pred_logits:", pred_logits[0].shape)
+        generated_ids = torch.cat(pred_tokens[1:], dim=1)[0]  # [T]
         full_logits = torch.cat(pred_logits, dim=0)  # [1, T, vocab_size]
         full_logits = full_logits.permute(1, 0, 2)  # shape: [X, B, Y]
         # full_logits = full_logits.reshape(-1, full_logits.size(-1))  # shape: [X*B, Y]
@@ -350,7 +350,7 @@ def main(args):
         for i in range(len(boi_pos)):
             start = boi_pos[i] + 1
             end = start + 256
-            vq_token = generated_ids[start:end]
+            vq_token = generated_ids.permute(1,0)
             vq_token_lists.append(vq_token)
 
         # pic_ori = os.path.basename(pic_path)
