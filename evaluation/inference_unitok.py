@@ -310,6 +310,7 @@ def main(args):
         # print("gen:", generated_ids)
         # print("gen shape:", generated_ids.shape)
         # ====== 生成后处理 ======
+        print("pred_logits:",pred_logits.shape)
         generated_ids = torch.cat(pred_tokens, dim=1)[0]  # [T]
         full_logits = torch.cat(pred_logits, dim=1)  # [1, T, vocab_size]
 
