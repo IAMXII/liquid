@@ -267,6 +267,7 @@ def main(args):
                     return_dict=False,
                 )
                 next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
+                print("next_token_logits:", next_token_logits.shape)
                 pred_logits.append(next_token_logits)
                 # if cfg_scale > 1:
                 #     cond_logits, uncond_logits = torch.split(next_token_logits, len(next_token_logits) // 2, dim=0)
