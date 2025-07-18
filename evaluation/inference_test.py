@@ -369,7 +369,8 @@ def main(args):
             print("new_gen_ids:", new_gen_ids.shape)
             rec_img = vq_model.idx_to_img(new_gen_ids)
             # rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
-            ori_img = vq_model.idx_to_img(future_vqcodes[i])
+            ori_code = future_vqcodes[i].unsqueeze(0).to('cuda')
+            ori_img = vq_model.idx_to_img(ori_code)
             # k = pic_num + i
             # ori_path = os.path.join(pic_dir, f"{k:05d}.jpg")
             # if not os.path.exists(ori_path):
