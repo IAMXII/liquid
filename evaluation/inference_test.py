@@ -208,7 +208,7 @@ def main(args):
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': False}
         cur_len = input_ids.shape[1] + 256 * 3
-        model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
+        model_kwargs = {'attention_mask': attention_mask, 'use_cache': False}
         model_kwargs["cache_position"] = torch.arange(cur_len, device="cuda:0")
 
         pred_tokens = []
@@ -304,6 +304,7 @@ def main(args):
             in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             if in_image_range:
                 new_input_ids = torch.cat([new_input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]]).to("cuda")], dim=-1)
+                input_multi_ids = torch.stack(pred_tokens, dim=-1)
             else:
                 if i in [x - 1 for x in image_insert_pos]:
                     next_token = torch.tensor([[7]]).to("cuda")
