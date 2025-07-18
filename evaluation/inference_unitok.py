@@ -223,6 +223,9 @@ def main(args):
         )
         for i in tqdm(range(257)):
             # model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            seq_len = inputs_embeds.size(1)
+            position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(
+                0)  # shape: [1, seq_len]
 
             outputs = vqllm.T2I_forward_withcache(
                     input_ids=input_ids,
