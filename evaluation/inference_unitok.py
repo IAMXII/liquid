@@ -238,11 +238,11 @@ def main(args):
             seq_len = inputs_embeds.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(
                 0)  # shape: [1, seq_len]
-            print("attention mask:",attention_mask)
+            # print("attention mask:",attention_mask)
             if i==0:
-                attention_mask = torch.cat([attention_mask, torch.tensor([[0]]).to("cuda")], dim=1)
+                attention_mask = torch.cat([attention_mask, torch.tensor([[False]]).to("cuda")], dim=1)
             else:
-                attention_mask = torch.cat([attention_mask, torch.tensor([[1]]).to("cuda")],dim=1)
+                attention_mask = torch.cat([attention_mask, torch.tensor([[True]]).to("cuda")],dim=1)
             outputs = vqllm.T2I_forward_withcache(
                     input_ids=input_ids,
                     position_ids=position_ids,
