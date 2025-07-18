@@ -258,7 +258,7 @@ def main(args):
             )
             # print(outputs.keys())
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # [1, 1, vocab_size]
-            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
+
             print("next_embeds:", next_embed)
             indices_arhead = []
             for i_head in range(num_codebooks):
@@ -286,6 +286,7 @@ def main(args):
                     predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
                     next_embed = torch.cat([next_embed, predicted_embed], dim=1)
             # print("next_embeds:", next_embed.shape)
+            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
             pred_logits.append(next_token_logits)
             pred_tokens.append(torch.cat(indices_arhead, dim=1))  # [numcodebook,bz*2]
             print("len:", len(pred_tokens))
