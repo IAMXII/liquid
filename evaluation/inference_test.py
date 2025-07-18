@@ -317,7 +317,7 @@ def main(args):
         # ====== 生成后处理 ======
         # print("pred_logits:",len(pred_logits))
         # print("pred_logits:", pred_logits[0].shape)
-        generated_ids = torch.cat(pred_tokens, dim=1)  # [T]
+        generated_ids = torch.cat(pred_tokens, dim=0)  # [T]
         print("generated_ids:", generated_ids.shape)
         full_logits = torch.cat(pred_logits, dim=0)  # [1, T, vocab_size]
         full_logits = full_logits.permute(1, 0, 2)  # shape: [X, B, Y]
