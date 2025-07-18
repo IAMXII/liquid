@@ -235,7 +235,7 @@ def main(args):
             images_aux=None,
             data_types=[5]
         )
-        for i in tqdm(range(257)):
+        for i in tqdm(range(total_steps)):
             # model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             seq_len = inputs_embeds.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(
