@@ -12,6 +12,8 @@ from VQA_Eval.conversation import conv_templates
 from threading import Thread
 from T2I_Eval.genaibench_generation import sample
 from torch.nn import CrossEntropyLoss
+import torchvision.transforms as T
+from PIL import Image
 import json
 from liquid.constants import (IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN,
                               DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN)
@@ -380,10 +382,17 @@ def main(args):
             # ori_img = Image.open(ori_path).convert("RGB")
             # ori_img = center_crop_image(ori_img, tgt_width=256, tgt_height=256)
 
-            w, h = ori_img.size
+            to_pil = T.ToPILImage()
+
+            # 将 torch.Tensor 转换为 PIL.Image
+            rec_img_pil = to_pil(rec_img.squeeze(0).cpu().clamp(0, 1))  # [C, H, W]
+            ori_img_pil = to_pil(ori_img.squeeze(0).cpu().clamp(0, 1))  # 同上
+
+            # 拼接并保存图像
+            w, h = ori_img_pil.size
             combined = Image.new("RGB", (w * 2, h))
-            combined.paste(ori_img, (0, 0))
-            combined.paste(rec_img, (w, 0))
+            combined.paste(ori_img_pil, (0, 0))
+            combined.paste(rec_img_pil, (w, 0))
             combined.save(f"{image_save_pth}/compare_{i}.jpg")
 
 
