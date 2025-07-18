@@ -44,7 +44,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
                  ", now predict the next frames, their waypoints are " + \
                  ", ".join([format_wp(wp) for wp in future_wps])
 
-    gpt_text = ""
+    gpt_text = "<boi>"
 
     conv = conversation_lib.default_conversation.copy()
     conv.append_message(conv.roles[0], human_text)
@@ -212,7 +212,7 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [271 * i + 1 for i in range(6)]
+        image_insert_pos = [271 * i for i in range(6)]
         image_index = 0
         total_steps = 1626
         (
@@ -333,7 +333,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 271+1
+        boi_pos = np.arange(6) * 271
         img_logits = []
         for pos in boi_pos:
             start = pos
