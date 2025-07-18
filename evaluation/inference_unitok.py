@@ -295,9 +295,9 @@ def main(args):
                 is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
             if i==0:
-                new_input_ids = torch.cat([input_ids, next_token], dim=-1)
+                new_input_ids = torch.cat([new_input_ids, next_token], dim=-1)
             else:
-                new_input_ids = torch.cat([input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]])], dim=-1)
+                new_input_ids = torch.cat([new_input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]])], dim=-1)
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
