@@ -392,7 +392,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 271
+        boi_pos = np.arange(6) * 271+1
         img_logits = []
         for pos in boi_pos:
             start = pos
@@ -413,7 +413,7 @@ def main(args):
         # ====== 解码图像 & 可视化对比 ======
         vq_token_lists = []
         for i in range(len(boi_pos)):
-            start = boi_pos[i] + 1
+            start = boi_pos[i]
             end = start + 256
             vq_token = generated_ids[start:end]
             vq_token_lists.append(vq_token)
