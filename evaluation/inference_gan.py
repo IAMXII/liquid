@@ -350,7 +350,7 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [271 * i + 1 for i in range(6)]
+        image_insert_pos = [271 * i + 2 for i in range(6)]
         for i in tqdm(range(1626)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
@@ -375,10 +375,10 @@ def main(args):
                 # 找出最大值和对应索引
                 max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
                 next_token = max_idx
-                if i in [x - 1 for x in image_insert_pos]:
-                    next_token = torch.tensor([[7]]).to("cuda")  # <boi>
-                elif i in [x + 256 for x in image_insert_pos]:
-                    next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
+                # if i in [x - 1 for x in image_insert_pos]:
+                #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
+                # elif i in [x + 256 for x in image_insert_pos]:
+                #     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
 
             pred_tokens.append(next_token)
             pred_logits.append(next_token_logits)
