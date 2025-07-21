@@ -296,26 +296,26 @@ def main(args):
         for i in tqdm(range(total_steps)):
             in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             # 决定 inputs_embeds 的裁剪范围
-            if is_last_image_embed:
-                # 查找当前图像的插入位置，并裁剪到其开始前
-                current_img_idx = max([j for j, pos in enumerate(image_insert_pos) if pos <= i])
-                img_start_pos = image_insert_pos[current_img_idx]
-                input_chunk = inputs_embeds[:, img_start_pos:]
-            else:
-                input_chunk = inputs_embeds
+            # if is_last_image_embed:
+            #     # 查找当前图像的插入位置，并裁剪到其开始前
+            #     current_img_idx = max([j for j, pos in enumerate(image_insert_pos) if pos <= i])
+            #     img_start_pos = image_insert_pos[current_img_idx]
+            #     input_chunk = inputs_embeds[:, img_start_pos:]
+            # else:
+            #     input_chunk = inputs_embeds
 
-            seq_len = input_chunk.size(1)
-            position_ids = torch.arange(seq_len, dtype=torch.long, device=input_chunk.device).unsqueeze(0)
+            seq_len = inputs_embeds.size(1)
+            position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
-            attention_mask = attention_mask[:, -seq_len:]
+            # attention_mask = attention_mask[:, -seq_len:]
             outputs = vqllm.T2I_forward_withcache(
                 input_ids=input_ids,
                 position_ids=position_ids,
                 attention_mask=attention_mask,
                 past_key_values=past_key_values,
                 input_multi_ids=None,
-                inputs_embeds=input_chunk,
+                inputs_embeds=inputs_embeds,
                 return_dict=True,
                 output_attentions=False,
                 output_hidden_states=False,
@@ -336,8 +336,6 @@ def main(args):
                     )
                     next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
                     # print("next_token_logits", next_token_logits)
-                    if torch.isnan(next_token_logits).any() or torch.isinf(next_token_logits).any():
-                        print("Logits contain NaN or Inf")
                     next_token, next_prob = sample(next_token_logits, **sampling_kwargs)
                     indices_arhead.append(next_token)
 
