@@ -389,9 +389,9 @@ def main(args):
 
             input_ids = torch.cat([input_ids, next_token], dim=1)
             # print("input_ids:", input_ids)
-            input_ids = input_ids.squeeze(0)  # 变成 1D tensor [N]
+            input_ids_ = input_ids.squeeze(0)  # 变成 1D tensor [N]
             with open("input_ids.txt", "w", encoding="utf-8") as f:
-                for token_id in input_ids:
+                for token_id in input_ids_:
                     f.write(f"{token_id.item()}\n")  # 每个元素一行
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
