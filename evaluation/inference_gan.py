@@ -40,7 +40,7 @@ def build_vqa_inference_input(tokenizer, sources):
     from liquid import conversation as conversation_lib
     conv = conversation_lib.default_conversation.copy()
     conv.append_message(conv.roles[0], human_text)
-    conv.append_message(conv.roles[1], "<boi>")  # 模型生成
+    conv.append_message(conv.roles[1], "")  # 模型生成
     prompt = conv.get_prompt()
 
     # 原始 input_ids 和 attention_mask（还不含图像 token）
