@@ -29,6 +29,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from abc import ABC, abstractmethod
 from transformers.deepspeed import is_deepspeed_zero3_enabled
+from torch.nn import functional as F
 
 from liquid.model.quant import VectorQuantizerM, AttnProjection
 from liquid.model.multimodal_projector.builder import build_vision_projector

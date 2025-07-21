@@ -355,7 +355,11 @@ def main(args):
             outputs = vqllm(**model_inputs, return_dict=True)
             # print(outputs.keys())
             next_token_logits = outputs.logits[:, -1:, :]  # [1, 1, vocab_size]
+            logits = next_token_logits[:, :, :256000]  # 只保留前256000个token的logits
+            probs = F.softmax(logits, dim=-1)  # [1, 1, 256000]
 
+            # 找出最大值和对应索引
+            max_prob, next_token = torch.max(probs, dim=-1)  # [1, 1]
             # logits_flat = next_token_logits.view(-1)  # 展平成 [vocab_size]
             # max_val, max_idx = torch.max(logits_flat, dim=0)
             # print("logit:", logits_flat)
