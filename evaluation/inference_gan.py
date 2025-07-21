@@ -359,12 +359,12 @@ def main(args):
             probs = F.softmax(logits, dim=-1)  # [1, 1, 256000]
 
             # 找出最大值和对应索引
-            max_prob, next_token = torch.max(probs, dim=-1)  # [1, 1]
+            max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
             # logits_flat = next_token_logits.view(-1)  # 展平成 [vocab_size]
             # max_val, max_idx = torch.max(logits_flat, dim=0)
             # print("logit:", logits_flat)
             # print("最大值:", max_val.item())
-            # print("最大值索引（token id）:", max_idx.item())
+            print("最大值索引（token id）:", max_idx.item())
 
             next_token, _ = sample(next_token_logits, **sampling_kwargs)
 
