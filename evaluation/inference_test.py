@@ -211,11 +211,6 @@ def main(args):
         model_kwargs = {'attention_mask': attention_mask, 'use_cache': False}
         model_kwargs["cache_position"] = torch.arange(cur_len, device="cuda:0")
 
-        pred_tokens = []
-        pred_logits = []
-        image_insert_pos = [271 * i+1 for i in range(6)]
-        image_index = 0
-        total_steps = 1626
         (
             input_ids,
             position_ids,
@@ -236,31 +231,43 @@ def main(args):
             images_aux=None,
             data_types=[5]
         )
+        pred_tokens = []
+        pred_logits = []
+        image_insert_pos = [271 * i + 1 for i in range(6)]
+        total_steps = 1626
+
+        is_last_image_embed = False  # 用于标记前一步是否是图像embedding
+
         for i in tqdm(range(total_steps)):
-            # model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
-            seq_len = inputs_embeds.size(1)
-            position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(
-                0)  # shape: [1, seq_len]
-            # print("attention mask:",attention_mask)
+            # 决定 inputs_embeds 的裁剪范围
+            if is_last_image_embed:
+                # 查找当前图像的插入位置，并裁剪到其开始前
+                current_img_idx = max([j for j, pos in enumerate(image_insert_pos) if pos <= i])
+                img_start_pos = image_insert_pos[current_img_idx]
+                input_chunk = inputs_embeds[:, img_start_pos:]
+            else:
+                input_chunk = inputs_embeds
 
+            seq_len = input_chunk.size(1)
+            position_ids = torch.arange(seq_len, dtype=torch.long, device=input_chunk.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
-
+            attention_mask = attention_mask[:, img_start_pos:]
             outputs = vqllm.T2I_forward_withcache(
                 input_ids=input_ids,
                 position_ids=position_ids,
                 attention_mask=attention_mask,
                 past_key_values=past_key_values,
                 input_multi_ids=None,
-                inputs_embeds=inputs_embeds,
+                inputs_embeds=input_chunk,
                 return_dict=True,
                 output_attentions=False,
                 output_hidden_states=False,
             )
-            # print(outputs.keys())
-            next_embed = outputs['last_hidden_state'][:, -1:, :]  # [1, 1, vocab_size]
 
-            print("next_embeds:", next_embed)
+            next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
             indices_arhead = []
+            is_last_image_embed = True  # 默认下一步是图像
+
             for i_head in range(num_codebooks):
                 ar_next_embed = vqllm.ar_head(
                     inputs_embeds=next_embed,
@@ -270,47 +277,40 @@ def main(args):
                     return_dict=False,
                 )
                 next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
-                # print("next_token_logits:", next_token_logits.shape)
-                # pred_logits.append(next_token_logits)
-                # if cfg_scale > 1:
-                #     cond_logits, uncond_logits = torch.split(next_token_logits, len(next_token_logits) // 2, dim=0)
-                #     cfg_logits = uncond_logits + (cond_logits - uncond_logits) * cfg_scale
-                #     half_next_token, _ = sample(cfg_logits, **sampling_kwargs)
-                #     # pred_tokens.append(half_next_token)
-                #     next_token = torch.cat([half_next_token, half_next_token])  # [bz,1]
-                # else:
                 next_token, next_prob = sample(next_token_logits, **sampling_kwargs)
-                # pred_tokens.append(next_token)
                 indices_arhead.append(next_token)
+
+                # 若不是最后一层 head，则准备下一个嵌入
                 if i_head < num_codebooks - 1:
                     predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
                     next_embed = torch.cat([next_embed, predicted_embed], dim=1)
-            # print("next_embeds:", next_embed.shape)
-            fake_id = torch.zeros_like(next_embed).to(next_embed.device)
-            inputs_embeds = torch.cat((inputs_embeds, fake_id), dim=1)
+
             pred_logits.append(next_token_logits)
-            pred_tokens.append(torch.cat(indices_arhead, dim=1))  # [numcodebook,bz*2]
-            # print("len:", len(pred_tokens))
-            # print("pred_tokens:", pred_tokens[0].shape)
-            # input_multi_ids = torch.stack(pred_tokens, dim=-1)
-            # fake_id = torch.zeros_like(input_ids[:, :1])
-            # input_ids = torch.cat([input_ids, fake_id], dim=-1)  # add fake id for cache
+            pred_tokens.append(torch.cat(indices_arhead, dim=1))
+
+            # fake id for cache & extend full embedding序列
+            # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
+            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
+
+            # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
             model_kwargs = vqllm._update_model_kwargs_for_generation(
-                outputs,
-                model_kwargs,
-                is_encoder_decoder=vqllm.config.is_encoder_decoder,
+                outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
+
+            # 判断当前位置是否是插图区域，用于决定 new_input_ids 拼接什么 token
             in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             if in_image_range:
                 new_input_ids = torch.cat([new_input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]]).to("cuda")], dim=-1)
-                input_multi_ids = torch.stack(pred_tokens, dim=-1)
             else:
                 if i in [x - 1 for x in image_insert_pos]:
-                    next_token = torch.tensor([[7]]).to("cuda")
+                    next_token = torch.tensor([[7]]).to("cuda")  # <boi>
+                    is_last_image_embed = False  # boi 是文本 token
                 elif i in [x + 256 for x in image_insert_pos]:
-                    next_token = torch.tensor([[8]]).to("cuda")
+                    next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
+                    is_last_image_embed = False
                 new_input_ids = torch.cat([new_input_ids, next_token], dim=-1)
+
 
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
