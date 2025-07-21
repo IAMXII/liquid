@@ -41,7 +41,7 @@ def build_vqa_inference_input(tokenizer, sources):
     from liquid import conversation as conversation_lib
     conv = conversation_lib.default_conversation.copy()
     conv.append_message(conv.roles[0], human_text)
-    conv.append_message(conv.roles[1], "")  # 模型生成
+    conv.append_message(conv.roles[1], "<boi>")  # 模型生成
     prompt = conv.get_prompt()
 
     # 原始 input_ids 和 attention_mask（还不含图像 token）
@@ -354,7 +354,7 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [271 * i + 2 for i in range(6)]
+        image_insert_pos = [271 * i for i in range(6)]
         for i in tqdm(range(1626)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
@@ -379,10 +379,10 @@ def main(args):
                 # 找出最大值和对应索引
                 max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
                 next_token = max_idx
-                # if i in [x - 1 for x in image_insert_pos]:
-                #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
-                # elif i in [x + 256 for x in image_insert_pos]:
-                #     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
+                if i in [x - 1 for x in image_insert_pos]:
+                    next_token = torch.tensor([[7]]).to("cuda")  # <boi>
+                elif i in [x + 256 for x in image_insert_pos]:
+                    next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
 
             pred_tokens.append(next_token)
             pred_logits.append(next_token_logits)
@@ -413,7 +413,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 271 + 1
+        boi_pos = np.arange(6) * 271
         img_logits = []
         for pos in boi_pos:
             start = pos
