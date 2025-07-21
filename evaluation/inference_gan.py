@@ -334,12 +334,12 @@ def main(args):
     image_tokenizer = ImageTokenizer(cfg_path=vqgan_cfg_path, ckpt_path=vqgan_ckpt_path, device="cuda:0")
 
     # ==== 加载数据 ====
-    with open("/data/tempdata_val/000000.jsonl", "r", encoding="utf-8") as f:
+    with open("/data/tempdata/000000.jsonl", "r", encoding="utf-8") as f:
         sources = json.loads(f.readline())
         future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
         gt_img_tokens = torch.cat(future_vqcodes, dim=0).to("cuda")  # [6*256]
 
-    pic_path = sources["pic_path"]
+    # pic_path = sources["pic_path"]
     input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
 
     with torch.no_grad():
@@ -435,9 +435,9 @@ def main(args):
             vq_token = generated_ids[start:end]
             vq_token_lists.append(vq_token)
 
-        pic_ori = os.path.basename(pic_path)
-        pic_num = int(pic_ori.split(".")[0])
-        pic_dir = os.path.dirname(pic_path)
+        # pic_ori = os.path.basename(pic_path)
+        # pic_num = int(pic_ori.split(".")[0])
+        # pic_dir = os.path.dirname(pic_path)
         pred_vqcodes = torch.stack(vq_token_lists, dim=0).to("cuda")  # [6, 256]
         pred_vqcodes = pred_vqcodes - len(tokenizer)
         pred_vqcodes = torch.clamp(pred_vqcodes, 0, 8191)
@@ -447,11 +447,11 @@ def main(args):
             print("vq_token:", vq_token.shape)
             rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
             ori_img = image_tokenizer.pil_from_img_toks(future_vqcodes[i], height=16, width=16)
-            k = pic_num + i
-            ori_path = os.path.join(pic_dir, f"{k:05d}.jpg")
-            if not os.path.exists(ori_path):
-                print(f"⚠️ 原图不存在: {ori_path}")
-                continue
+            # k = pic_num + i
+            # ori_path = os.path.join(pic_dir, f"{k:05d}.jpg")
+            # if not os.path.exists(ori_path):
+            #     print(f"⚠️ 原图不存在: {ori_path}")
+            #     continue
 
             # ori_img = Image.open(ori_path).convert("RGB")
             # ori_img = center_crop_image(ori_img, tgt_width=256, tgt_height=256)
