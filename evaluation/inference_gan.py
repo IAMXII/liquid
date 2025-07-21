@@ -344,7 +344,7 @@ def main(args):
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': False}
         cur_len = input_ids.shape[1]
-        model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
+        model_kwargs = {'attention_mask': attention_mask, 'use_cache': False}
         model_kwargs["cache_position"] = torch.arange(cur_len, device=input_ids.device)
 
         pred_tokens = []
