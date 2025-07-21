@@ -371,9 +371,9 @@ def main(args):
         # pic_ori = os.path.basename(pic_path)
         # pic_num = int(pic_ori.split(".")[0])
         # pic_dir = os.path.dirname(pic_path)
-        # pred_vqcodes = torch.stack(vq_token_lists, dim=0).to("cuda")  # [6, 256]
+        pred_vqcodes = torch.stack(vq_token_lists, dim=0).to("cuda")  # [6, 256]
         # pred_vqcodes = pred_vqcodes - len(tokenizer)
-        # pred_vqcodes = torch.clamp(pred_vqcodes, 0, 8191)
+        pred_vqcodes = torch.clamp(pred_vqcodes, 0, 4096)
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
         print("equal:",vq_token_lists[0]==vq_token_lists[1])
         for i, vq_token in enumerate(vq_token_lists):
