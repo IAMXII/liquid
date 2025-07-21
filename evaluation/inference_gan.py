@@ -354,11 +354,10 @@ def main(args):
         for i in tqdm(range(1626)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
-            # print(outputs.keys())
+
             next_token_logits = outputs.logits[:, -1:, :]  # [1, 1, vocab_size]
+            next_token_logits = next_token_logits[:,:,:264192]
             in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
-            logits = next_token_logits[:, :, :256000]  # 只保留前256000个token的logits
-            probs = F.softmax(logits, dim=-1)  # [1, 1, 256000]
 
             # 找出最大值和对应索引
             max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
@@ -385,7 +384,7 @@ def main(args):
             pred_logits.append(next_token_logits)
 
             input_ids = torch.cat([input_ids, next_token], dim=1)
-            print("input_ids:", input_ids.shape)
+            print("input_ids:", input_ids)
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
