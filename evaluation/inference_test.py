@@ -378,7 +378,7 @@ def main(args):
         print("equal:",vq_token_lists[0]==vq_token_lists[1])
         for i, vq_token in enumerate(pred_vqcodes):
             new_gen_ids = vq_token.unsqueeze(0).to('cuda')
-            print("new_gen_ids:", new_gen_ids.shape)
+            print("new_gen_ids:", new_gen_ids)
             rec_img = vq_model.idx_to_img(new_gen_ids)
             # rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
             ori_code = future_vqcodes[i].unsqueeze(0).to('cuda')
