@@ -354,7 +354,7 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [270 * i+1 for i in range(6)]
+        image_insert_pos = [269 * i+1 for i in range(6)]
         for i in tqdm(range(1626)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
