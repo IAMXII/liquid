@@ -329,7 +329,7 @@ def main(args):
         # print("pred_logits:",len(pred_logits))
         # print("pred_logits:", pred_logits[0].shape)
         generated_ids = torch.cat(pred_tokens, dim=0)  # [T]
-        print("generated_ids:", generated_ids.shape)
+        print("generated_ids:", generated_ids)
         full_logits = torch.cat(pred_logits, dim=0)  # [1, T, vocab_size]
         full_logits = full_logits.permute(1, 0, 2)  # shape: [X, B, Y]
         # full_logits = full_logits.reshape(-1, full_logits.size(-1))  # shape: [X*B, Y]
@@ -342,7 +342,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 271+1
+        # boi_pos = np.arange(6) * 271+1
         img_logits = []
         for pos in image_insert_pos:
             start = pos
