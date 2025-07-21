@@ -248,11 +248,11 @@ def main(args):
             else:
                 input_chunk = inputs_embeds
 
-            seq_len = inputs_embeds.size(1)
+            seq_len = input_chunk.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=input_chunk.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
-            # attention_mask = attention_mask[:, -seq_len:]
+            attention_mask = attention_mask[:, -seq_len:]
             outputs = vqllm.T2I_forward_withcache(
                 input_ids=input_ids,
                 position_ids=position_ids,
@@ -267,7 +267,7 @@ def main(args):
 
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
             indices_arhead = []
-            is_last_image_embed = True  # 默认下一步是图像
+            # is_last_image_embed = True  # 默认下一步是图像
 
             for i_head in range(num_codebooks):
                 ar_next_embed = vqllm.ar_head(
@@ -306,7 +306,7 @@ def main(args):
             else:
                 if i in [x - 1 for x in image_insert_pos]:
                     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
-                    is_last_image_embed = False  # boi 是文本 token
+                    is_last_image_embed = True  # boi 是文本 token
                 elif i in [x + 256 for x in image_insert_pos]:
                     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
                     is_last_image_embed = False
