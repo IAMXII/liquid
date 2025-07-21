@@ -248,7 +248,7 @@ def main(args):
             else:
                 input_chunk = inputs_embeds
 
-            seq_len = input_chunk.size(1)
+            seq_len = inputs_embeds.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=input_chunk.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
@@ -363,7 +363,7 @@ def main(args):
         # ====== 解码图像 & 可视化对比 ======
         vq_token_lists = []
         for i in range(len(boi_pos)):
-            start = boi_pos[i] + 1
+            start = boi_pos[i]
             end = start + 256
             vq_token = generated_ids[start:end, :].permute(1, 0)
             vq_token_lists.append(vq_token)
