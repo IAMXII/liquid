@@ -280,7 +280,9 @@ def main(args):
                         return_dict=False,
                     )
                     next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
-                    print("next_token_logits", next_token_logits)
+                    # print("next_token_logits", next_token_logits)
+                    if torch.isnan(next_token_logits).any() or torch.isinf(next_token_logits).any():
+                        print("Logits contain NaN or Inf")
                     next_token, next_prob = sample(next_token_logits, **sampling_kwargs)
                     indices_arhead.append(next_token)
 
