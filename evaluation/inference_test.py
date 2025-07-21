@@ -10,7 +10,7 @@ from tqdm import tqdm
 from chameleon.inference.image_tokenizer import ImageTokenizer
 from VQA_Eval.conversation import conv_templates
 from threading import Thread
-from T2I_Eval.genaibench_generation import sample
+from torch.nn import functional as F
 from torch.nn import CrossEntropyLoss
 import torchvision.transforms as T
 from PIL import Image
