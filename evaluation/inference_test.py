@@ -252,7 +252,7 @@ def main(args):
             position_ids = torch.arange(seq_len, dtype=torch.long, device=input_chunk.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
-            attention_mask = attention_mask[:, -seq_len:]
+            # attention_mask = attention_mask[:, -seq_len:]
             outputs = vqllm.T2I_forward_withcache(
                 input_ids=input_ids,
                 position_ids=position_ids,
@@ -344,7 +344,7 @@ def main(args):
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
         boi_pos = np.arange(6) * 271+1
         img_logits = []
-        for pos in boi_pos:
+        for pos in image_insert_pos:
             start = pos
             end = start + 256
             img_logits.append(full_logits[:, start:end])  # 每张256个 token
@@ -362,8 +362,8 @@ def main(args):
 
         # ====== 解码图像 & 可视化对比 ======
         vq_token_lists = []
-        for i in range(len(boi_pos)):
-            start = boi_pos[i]
+        for i in range(len(image_insert_pos)):
+            start = image_insert_pos[i]
             end = start + 256
             vq_token = generated_ids[start:end, :].permute(1, 0)
             vq_token_lists.append(vq_token)
