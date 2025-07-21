@@ -360,7 +360,7 @@ def main(args):
             in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
 
             # 找出最大值和对应索引
-            max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
+            # max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
             # logits_flat = next_token_logits.view(-1)  # 展平成 [vocab_size]
             # max_val, max_idx = torch.max(logits_flat, dim=0)
             # print("logit:", logits_flat)
