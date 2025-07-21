@@ -15,6 +15,7 @@ from torch.nn import CrossEntropyLoss
 import json
 from torch.nn import functional as F
 
+
 def format_wp(wp):  # 格式化为 "[x,y]"
     return f"[{wp[0]:.2f},{wp[1]:.2f}]"
 
@@ -374,7 +375,7 @@ def main(args):
 
                 # 找出最大值和对应索引
                 max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
-                next_token  = max_idx
+                next_token = max_idx
                 if i in [x - 1 for x in image_insert_pos]:
                     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
                 elif i in [x + 256 for x in image_insert_pos]:
@@ -409,7 +410,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 271+1
+        boi_pos = np.arange(6) * 271 + 1
         img_logits = []
         for pos in boi_pos:
             start = pos
@@ -444,6 +445,7 @@ def main(args):
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
         for i, vq_token in enumerate(pred_vqcodes):
             # vq_token = vq_token - len(tokenizer)
+            print("vq_token:", vq_token.shape)
             rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
             ori_img = image_tokenizer.pil_from_img_toks(future_vqcodes[i], height=16, width=16)
             k = pic_num + i
@@ -476,5 +478,3 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     main(args)
-
-
