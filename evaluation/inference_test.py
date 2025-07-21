@@ -373,10 +373,10 @@ def main(args):
         # pic_dir = os.path.dirname(pic_path)
         pred_vqcodes = torch.stack(vq_token_lists, dim=0).to("cuda")  # [6, 256]
         # pred_vqcodes = pred_vqcodes - len(tokenizer)
-        pred_vqcodes = torch.clamp(pred_vqcodes, 0, 4096)
+        pred_vqcodes = torch.clamp(pred_vqcodes, 0, 4095)
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
         print("equal:",vq_token_lists[0]==vq_token_lists[1])
-        for i, vq_token in enumerate(vq_token_lists):
+        for i, vq_token in enumerate(pred_vqcodes):
             new_gen_ids = vq_token.unsqueeze(0).to('cuda')
             print("new_gen_ids:", new_gen_ids.shape)
             rec_img = vq_model.idx_to_img(new_gen_ids)
