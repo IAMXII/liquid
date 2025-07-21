@@ -356,18 +356,19 @@ def main(args):
             # print(outputs.keys())
             next_token_logits = outputs.logits[:, -1:, :]  # [1, 1, vocab_size]
 
-            logits_flat = next_token_logits.view(-1)  # 展平成 [vocab_size]
-            max_val, max_idx = torch.max(logits_flat, dim=0)
-            print("logit:", logits_flat)
-            print("最大值:", max_val.item())
-            print("最大值索引（token id）:", max_idx.item())
+            # logits_flat = next_token_logits.view(-1)  # 展平成 [vocab_size]
+            # max_val, max_idx = torch.max(logits_flat, dim=0)
+            # print("logit:", logits_flat)
+            # print("最大值:", max_val.item())
+            # print("最大值索引（token id）:", max_idx.item())
 
             next_token, _ = sample(next_token_logits, **sampling_kwargs)
 
             pred_tokens.append(next_token)
             pred_logits.append(next_token_logits)
 
-            input_ids = torch.cat([input_ids, next_token], dim=-1)
+            input_ids = torch.cat([input_ids, next_token], dim=1)
+            print("input_ids:", input_ids.shape)
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
             )
@@ -425,7 +426,7 @@ def main(args):
         pred_vqcodes = pred_vqcodes - len(tokenizer)
         pred_vqcodes = torch.clamp(pred_vqcodes, 0, 8191)
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
-        for i, vq_token in enumerate(vq_token_lists):
+        for i, vq_token in enumerate(pred_vqcodes):
             vq_token = vq_token - len(tokenizer)
             rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
             ori_img = image_tokenizer.pil_from_img_toks(future_vqcodes[i], height=16, width=16)
