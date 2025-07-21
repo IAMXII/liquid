@@ -251,7 +251,8 @@ def main(args):
             seq_len = input_chunk.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=input_chunk.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
-            attention_mask = attention_mask[:, img_start_pos:]
+            # len_input = input_chunk.size(1)
+            attention_mask = attention_mask[:, -seq_len:]
             outputs = vqllm.T2I_forward_withcache(
                 input_ids=input_ids,
                 position_ids=position_ids,
