@@ -354,7 +354,7 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [269 * i+1 for i in range(6)]
+        image_insert_pos = [269 * i+2 for i in range(6)]
         for i in tqdm(range(1626)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
@@ -417,7 +417,7 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 269+1
+        boi_pos = np.arange(6) * 269+2
         img_logits = []
         for pos in boi_pos:
             start = pos
@@ -481,7 +481,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=float, default=7.0, help='Classifier-Free Guidance scale')
     parser.add_argument('--TopP', type=float, default=0.96, help='Top P, max=1.0')
     parser.add_argument('--TopK', type=int, default=4096, help='Top K, max=264192')
-    parser.add_argument('--temperature', type=float, default=0.99, help='sampling temperature, max=1.0')
+    parser.add_argument('--temperature', type=float, default=0.2, help='sampling temperature, max=1.0')
 
     args = parser.parse_args()
     main(args)
