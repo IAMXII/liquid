@@ -349,12 +349,13 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-
-        for _ in tqdm(range(1626)):
+        image_insert_pos = [271 * i + 1 for i in range(6)]
+        for i in tqdm(range(1626)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
             # print(outputs.keys())
             next_token_logits = outputs.logits[:, -1:, :]  # [1, 1, vocab_size]
+            in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             logits = next_token_logits[:, :, :256000]  # 只保留前256000个token的logits
             probs = F.softmax(logits, dim=-1)  # [1, 1, 256000]
 
@@ -364,9 +365,20 @@ def main(args):
             # max_val, max_idx = torch.max(logits_flat, dim=0)
             # print("logit:", logits_flat)
             # print("最大值:", max_val.item())
-            print("最大值索引（token id）:", max_idx.item())
+            # print("最大值索引（token id）:", max_idx.item())
+            if in_image_range:
+                next_token, _ = sample(next_token_logits, **sampling_kwargs)
+            else:
+                logits = next_token_logits[:, :, :256000]  # 只保留前256000个token的logits
+                probs = F.softmax(logits, dim=-1)  # [1, 1, 256000]
 
-            next_token, _ = sample(next_token_logits, **sampling_kwargs)
+                # 找出最大值和对应索引
+                max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
+                next_token  = max_idx
+                if i in [x - 1 for x in image_insert_pos]:
+                    next_token = torch.tensor([[7]]).to("cuda")  # <boi>
+                elif i in [x + 256 for x in image_insert_pos]:
+                    next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
 
             pred_tokens.append(next_token)
             pred_logits.append(next_token_logits)
