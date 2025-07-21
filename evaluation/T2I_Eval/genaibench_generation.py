@@ -65,6 +65,17 @@ def sample(logits, temperature: float=1.0, top_k: int=0, top_p: float=1.0, sampl
     if top_k > 0 or top_p < 1.0:
         logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
     probs = F.softmax(logits, dim=-1)
+    if torch.isnan(probs).any() or torch.isinf(probs).any():
+        print("Probs contain NaN or Inf")
+        print("Logits:", logits)
+        print("Softmax output:", probs)
+        exit()
+
+    if (probs < 0).any():
+        print("Probs contain negative values")
+        print("Logits:", logits)
+        print("Softmax output:", probs)
+        exit()
     if sample_logits:
         idx = torch.multinomial(probs, num_samples=1)
     else:
