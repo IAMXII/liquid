@@ -239,6 +239,7 @@ def main(args):
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
 
         for i in tqdm(range(total_steps)):
+            in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             # 决定 inputs_embeds 的裁剪范围
             if is_last_image_embed:
                 # 查找当前图像的插入位置，并裁剪到其开始前
@@ -268,26 +269,27 @@ def main(args):
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
             indices_arhead = []
             # is_last_image_embed = True  # 默认下一步是图像
+            if in_image_range:
 
-            for i_head in range(num_codebooks):
-                ar_next_embed = vqllm.ar_head(
-                    inputs_embeds=next_embed,
-                    use_cache=False,
-                    output_attentions=False,
-                    output_hidden_states=False,
-                    return_dict=False,
-                )
-                next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
-                next_token, next_prob = sample(next_token_logits, **sampling_kwargs)
-                indices_arhead.append(next_token)
+                for i_head in range(num_codebooks):
+                    ar_next_embed = vqllm.ar_head(
+                        inputs_embeds=next_embed,
+                        use_cache=False,
+                        output_attentions=False,
+                        output_hidden_states=False,
+                        return_dict=False,
+                    )
+                    next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
+                    next_token, next_prob = sample(next_token_logits, **sampling_kwargs)
+                    indices_arhead.append(next_token)
 
-                # 若不是最后一层 head，则准备下一个嵌入
-                if i_head < num_codebooks - 1:
-                    predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
-                    next_embed = torch.cat([next_embed, predicted_embed], dim=1)
+                    # 若不是最后一层 head，则准备下一个嵌入
+                    if i_head < num_codebooks - 1:
+                        predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
+                        next_embed = torch.cat([next_embed, predicted_embed], dim=1)
 
-            pred_logits.append(next_token_logits)
-            pred_tokens.append(torch.cat(indices_arhead, dim=1))
+                pred_logits.append(next_token_logits)
+                pred_tokens.append(torch.cat(indices_arhead, dim=1))
 
             # fake id for cache & extend full embedding序列
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
@@ -300,7 +302,7 @@ def main(args):
             )
 
             # 判断当前位置是否是插图区域，用于决定 new_input_ids 拼接什么 token
-            in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
+
             if in_image_range:
                 new_input_ids = torch.cat([new_input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]]).to("cuda")], dim=-1)
             else:
@@ -344,7 +346,8 @@ def main(args):
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
         # boi_pos = np.arange(6) * 271+1
         img_logits = []
-        for pos in image_insert_pos:
+        pos_logits = np.arange(6)*256
+        for pos in pos_logits:
             start = pos
             end = start + 256
             img_logits.append(full_logits[:, start:end])  # 每张256个 token
@@ -363,7 +366,7 @@ def main(args):
         # ====== 解码图像 & 可视化对比 ======
         vq_token_lists = []
         for i in range(len(image_insert_pos)):
-            start = image_insert_pos[i]
+            start = pos_logits[i]
             end = start + 256
             vq_token = generated_ids[start:end, :].permute(1, 0)
             vq_token_lists.append(vq_token)
