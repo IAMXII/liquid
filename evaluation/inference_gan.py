@@ -13,7 +13,7 @@ from threading import Thread
 from T2I_Eval.genaibench_generation import sample
 from torch.nn import CrossEntropyLoss
 import json
-
+from torch.nn import functional as F
 
 def format_wp(wp):  # 格式化为 "[x,y]"
     return f"[{wp[0]:.2f},{wp[1]:.2f}]"
