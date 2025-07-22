@@ -390,8 +390,9 @@ def main(args):
         # ====== 生成后处理 ======
         # print("pred_logits:",len(pred_logits))
         # print("pred_logits:", pred_logits[0].shape)
-        generated_ids = torch.cat(pred_tokens, dim=0)  # [T]
-        print("generated_ids:", generated_ids)
+        # generated_ids = torch.cat(pred_tokens, dim=0)  # [T]
+        generated_ids = torch.stack(pred_tokens, dim=-1)
+        print("generated_ids:", generated_ids.shape)
         full_logits = torch.cat(pred_logits, dim=0)  # [1, T, vocab_size]
         full_logits = full_logits.permute(1, 0, 2)  # shape: [X, B, Y]
         # full_logits = full_logits.reshape(-1, full_logits.size(-1))  # shape: [X*B, Y]
@@ -401,7 +402,7 @@ def main(args):
         # print("boi:", boi_token_id)
         # boi_pos = (generated_ids == boi_token_id).nonzero(as_tuple=True)[0]
         count = (generated_ids < 256000).sum().item()
-        print("小于 256000 的数量为：", count)
+        # print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
         # boi_pos = np.arange(6) * 271+1
@@ -455,10 +456,10 @@ def main(args):
         # pred_vqcodes = pred_vqcodes - len(tokenizer)
         pred_vqcodes = torch.clamp(pred_vqcodes, 0, 4095)
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
-        print("equal:",vq_token_lists[0]==vq_token_lists[1])
+        # print("equal:",vq_token_lists[0]==vq_token_lists[1])
         for i, vq_token in enumerate(pred_vqcodes):
             new_gen_ids = vq_token.unsqueeze(0).to('cuda')
-            print("new_gen_ids:", new_gen_ids)
+            # print("new_gen_ids:", new_gen_ids)
             rec_img = vq_model.idx_to_img(new_gen_ids)
             # rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
             ori_code = future_vqcodes[i].unsqueeze(0).to('cuda')
