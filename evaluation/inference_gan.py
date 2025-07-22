@@ -456,7 +456,7 @@ def main(args):
                 # probs = F.softmax(logits, dim=-1)
                 # max_prob, max_idx = torch.max(probs, dim=-1)
                 # next_token = max_idx
-                next_token, _ = sample(logits, **sampling_kwargs)
+                next_token, _ = sample_lw(logits, **sampling_kwargs)
 
                 # 如果输出了 <boi>，进入图像生成状态
                 if next_token.item() == boi_token_id:
