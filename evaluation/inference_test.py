@@ -11,6 +11,7 @@ from chameleon.inference.image_tokenizer import ImageTokenizer
 from VQA_Eval.conversation import conv_templates
 from threading import Thread
 from torch.nn import functional as F
+PILtransform = transforms.ToPILImage()
 from torch.nn import CrossEntropyLoss
 import torchvision.transforms as T
 from PIL import Image
@@ -475,8 +476,9 @@ def main(args):
 
             to_pil = T.ToPILImage()
 
-            # 将 torch.Tensor 转换为 PIL.Image
-            rec_img_pil = to_pil(rec_img.squeeze(0).cpu().clamp(0, 1))  # [C, H, W]
+            # 将 torch.Tensor 转换为 PIL.
+            rec_img_pil = PILtransform(rec_img.squeeze(0).add(1).mul_(0.5).clamp_(0, 1))
+            # rec_img_pil = to_pil(rec_img.squeeze(0).cpu().clamp(0, 1))  # [C, H, W]
             ori_img_pil = to_pil(ori_img.squeeze(0).cpu().clamp(0, 1))  # 同上
 
             # 拼接并保存图像
