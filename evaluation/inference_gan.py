@@ -464,7 +464,7 @@ def main(args):
         # pic_dir = os.path.dirname(pic_path)
         pred_vqcodes = torch.stack(vq_token_lists, dim=0).to("cuda")  # [6, 256]
         pred_vqcodes = pred_vqcodes - len(tokenizer)
-        pred_vqcodes = torch.clamp(pred_vqcodes, 0, 8191)
+        pred_vqcodes = torch.clamp(pred_vqcodes, 0, 1023)
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
         for i, vq_token in enumerate(pred_vqcodes):
             # vq_token = vq_token - len(tokenizer)
@@ -499,7 +499,7 @@ if __name__ == '__main__':
     parser.add_argument('--load_8bit', action='store_true', default=False, help='use 8bit to save memory')
     parser.add_argument('--cfg', type=float, default=7.0, help='Classifier-Free Guidance scale')
     parser.add_argument('--TopP', type=float, default=0.96, help='Top P, max=1.0')
-    parser.add_argument('--TopK', type=int, default=8192, help='Top K, max=264192')
+    parser.add_argument('--TopK', type=int, default=512, help='Top K, max=264192')
     parser.add_argument('--temperature', type=float, default=0, help='sampling temperature, max=1.0')
 
     args = parser.parse_args()
