@@ -114,7 +114,7 @@ def build_vqa_inference_input(tokenizer, sources):
         output_mask = []
         i = 0
         vq_iter = iter(vqcode_list)
-        while i < len(input_ids)-1:
+        while i < len(input_ids):
             token = input_ids[i]
             token_str = tokenizer.convert_ids_to_tokens(token)
             if token_str == "<boi>":
@@ -404,7 +404,8 @@ def main(args):
 
     # pic_path = sources["pic_path"]
     input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
-
+    input_ids = input_ids[:,:-256]
+    attention_mask = attention_mask[:,:-256]
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': True}
         cur_len = input_ids.shape[1]
