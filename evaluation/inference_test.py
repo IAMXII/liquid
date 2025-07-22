@@ -322,6 +322,7 @@ def main(args):
             )
 
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
+            next_embed_t = next_embed
             indices_arhead = []
             # is_last_image_embed = True  # 默认下一步是图像
             if in_image_range:
@@ -368,6 +369,8 @@ def main(args):
                 elif i in [x + 256 for x in image_insert_pos]:
                     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
                     is_last_image_embed = False
+                else:
+                    next_token = torch.tensor([[0]]).to("cuda")
                 new_input_ids = torch.cat([new_input_ids, next_token], dim=-1)
 
 
