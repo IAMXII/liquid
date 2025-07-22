@@ -238,6 +238,7 @@ def main(args):
     # input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
 
     input_ids, labels = build_vqa_pair_with_vqcode(tokenizer, sources)
+    input_ids = input_ids[:,:-1]
     known_vqcodes = [torch.tensor(json.loads(s)) for s in sources["known_vqcodes"]]
     future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
     # print(known_vqcodes[0])
@@ -269,7 +270,7 @@ def main(args):
     new_input_ids = torch.tensor([new_ids], dtype=input_ids.dtype, device=input_ids.device)
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': True}
-        cur_len = input_ids.shape[1] + 256 * 3
+        cur_len = input_ids.shape[1]
         model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
         model_kwargs["cache_position"] = torch.arange(cur_len, device="cuda:0")
 
@@ -363,9 +364,6 @@ def main(args):
             inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
             # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
-            model_kwargs = vqllm._update_model_kwargs_for_generation(
-                outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
-            )
 
             # 判断当前位置是否是插图区域，用于决定 new_input_ids 拼接什么 token
 

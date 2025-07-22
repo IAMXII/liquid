@@ -276,7 +276,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
 
     human_text = "We already know three frames and their waypoints: " + ", ".join(
         [make_vqtext(wp) for wp in known_wps]
-    ) + ", now predict the next frame, their waypoints are " + ", ".join([format_wp(wp) for wp in future_wps])
+    ) + ", now predict the next frames, their waypoints are " + ", ".join([format_wp(wp) for wp in future_wps])
 
     gpt_text = ", ".join([make_vqtext(wp) for wp in future_wps])
 
@@ -355,57 +355,6 @@ class DataCollatorForSupervisedDataset(object):
         processed_instances = []
 
         for sources in instances:
-
-            # if sources['data_type']  in ['image_text'] :
-            #     vqcode = json.loads(sources['vqcode_{}'.format(str(vq_resolution))])
-            #     vqcode = torch.tensor(vqcode) + len(self.tokenizer)
-            #
-            #     if np.random.rand() < T2I_ratio : # T2I mode
-            #         prompt = random_choice_t2iprompt_from_list()
-            #
-            #         if 'multi' in sources['data_type']: # for multi resolution generation
-            #             prompt = 'Image Size: Width is {} Height is {}.'.format(sources['width'],sources['height'] )  + prompt
-            #         text = sources['text']+prompt
-            #
-            #         if np.random.rand() > 0.9 :
-            #             if 'multi' in sources['data_type']:
-            #                 text =  'Image Size: Width is {} Height is {}. <unconditional>'.format(sources['width'],sources['height'] )
-            #             else:
-            #                 text = "<unconditional>"
-            #
-            #         text = text+'<boi><eoi><eos>'
-            #         conversations = [text]
-            #         input_ids = self.tokenizer(
-            #                 conversations,
-            #                 return_tensors="pt",
-            #                 padding="longest",
-            #                 max_length=self.tokenizer.model_max_length,
-            #                 truncation=True,
-            #             ).input_ids[0]
-            #
-            #         instruction_len = len(input_ids[:-2])
-            #         input_ids = torch.cat([input_ids[:-2],vqcode,input_ids[-2:]])
-            #
-            #     else: # caption mode
-            #
-            #         caption = sources['text']+'<eos>'
-            #         instruction = '<boi><eoi>The caption of this image is:'
-            #
-            #         caption_ids = self.tokenizer( caption,  return_tensors="pt",  padding="longest",  max_length=self.tokenizer.model_max_length,  truncation=True, ).input_ids[0]
-            #         instruct_id = self.tokenizer( instruction,  return_tensors="pt",  padding="longest",  max_length=self.tokenizer.model_max_length,  truncation=True, ).input_ids[0]
-            #
-            #         input_ids = torch.cat([instruct_id[:2],
-            #                                vqcode,
-            #                                instruct_id[2:],
-            #                                caption_ids[1:]])
-            #         instruction_len = len(input_ids) - len(caption_ids)+1
-            #
-            #     targets = input_ids.clone()
-            #     targets[: instruction_len] = IGNORE_INDEX
-            #     processed_instances.append(dict(
-            #         input_ids=input_ids,
-            #         labels=targets,
-            #     ))
             if sources['data_type'] == 'waypoint_vqa':
                 input_ids, labels = build_vqa_pair_with_vqcode(self.tokenizer, sources)
                 processed_instances.append(dict(input_ids=input_ids, labels=labels))
