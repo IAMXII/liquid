@@ -445,7 +445,7 @@ def main(args):
         for i in range(len(image_insert_pos)):
             start = pos_logits[i]
             end = start + 256
-            vq_token = generated_ids[start:end, :].permute(1, 0)
+            vq_token = generated_ids[:, :, start:end]
             print("vq_token:", vq_token.shape)
             vq_token_lists.append(vq_token)
 
@@ -458,7 +458,7 @@ def main(args):
         future_vqcodes = torch.stack(future_vqcodes, dim=0).to("cuda")
         # print("equal:",vq_token_lists[0]==vq_token_lists[1])
         for i, vq_token in enumerate(pred_vqcodes):
-            new_gen_ids = vq_token.unsqueeze(0).to('cuda')
+            new_gen_ids = vq_token.to('cuda')
             # print("new_gen_ids:", new_gen_ids)
             rec_img = vq_model.idx_to_img(new_gen_ids)
             # rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
