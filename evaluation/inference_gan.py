@@ -452,14 +452,16 @@ def main(args):
 
                 if image_tokens_remaining == 0:
                     generating_image_tokens = False
+                    print("nextToken1:", next_token)
 
-            else:
-                # 普通文本逻辑，只保留前256000个token
-                logits = next_token_logits[:, :, :256000]
-                # probs = F.softmax(logits, dim=-1)
-                # max_prob, max_idx = torch.max(probs, dim=-1)
-                # next_token = max_idx
-                next_token, _ = sample_lw(logits, **sampling_kwargs)
+                else:
+                    # 普通文本逻辑，只保留前256000个token
+                    logits = next_token_logits[:, :, :256000]
+                    # probs = F.softmax(logits, dim=-1)
+                    # max_prob, max_idx = torch.max(probs, dim=-1)
+                    # next_token = max_idx
+                    next_token, _ = sample_lw(logits, **sampling_kwargs)
+                    print("nextToken2:", next_token)
 
                 # 如果输出了 <boi>，进入图像生成状态
                 if next_token.item() == boi_token_id:
