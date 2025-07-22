@@ -436,7 +436,7 @@ def main(args):
         # print("📉 Average Image CrossEntropy Loss:", image_ce_loss.item())
 
         image_losses = []
-        img_loss_l = img_logits.reshape(-1, 264192)[:, -8192:]
+        img_loss_l = img_logits.reshape(-1, 264192)[:, -8192:-7168]
 
         for i in range(6):
             start = i * 256
@@ -500,7 +500,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=float, default=7.0, help='Classifier-Free Guidance scale')
     parser.add_argument('--TopP', type=float, default=0.96, help='Top P, max=1.0')
     parser.add_argument('--TopK', type=int, default=512, help='Top K, max=264192')
-    parser.add_argument('--temperature', type=float, default=0, help='sampling temperature, max=1.0')
+    parser.add_argument('--temperature', type=float, default=0.99, help='sampling temperature, max=1.0')
 
     args = parser.parse_args()
     main(args)
