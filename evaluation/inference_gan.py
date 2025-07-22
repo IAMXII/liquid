@@ -35,6 +35,7 @@ def sample_lw(logits, temperature: float = 1.0, top_k: int = 0, top_p: float = 1
         probs (Tensor): 当前 token 分布的 softmax 概率
     """
     logits = logits[:, -1, :]
+    print(logits)
     if temperature != 1.0:
         logits = logits / temperature
 
