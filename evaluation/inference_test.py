@@ -102,7 +102,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
                  ", now predict the next frames, their waypoints are " + \
                  ", ".join([format_wp(wp) for wp in future_wps])
 
-    gpt_text = ""
+    gpt_text = "<boi>"
 
     conv = conversation_lib.default_conversation.copy()
     conv.append_message(conv.roles[0], human_text)
@@ -295,7 +295,7 @@ def main(args):
         )
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [269 * i + 3 for i in range(6)]
+        image_insert_pos = [269 * i for i in range(6)]
         total_steps = 1626
 
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
@@ -355,11 +355,11 @@ def main(args):
 
                 pred_logits.append(next_token_logits)
                 pred_tokens.append(torch.cat(indices_arhead, dim=1))
-
+                next_token = torch.stack(pred_tokens, dim=-1)
+                next_embed = vqllm.get_model().multi_embedder(next_token)
             # fake id for cache & extend full embedding序列
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
-            next_token = torch.stack(pred_tokens, dim=-1)
-            next_embed = vqllm.get_model().multi_embedder(next_token)
+
             inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
             # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
