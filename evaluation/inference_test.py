@@ -239,6 +239,7 @@ def main(args):
 
     input_ids, labels = build_vqa_pair_with_vqcode(tokenizer, sources)
     input_ids = input_ids[:,:-1]
+    labels = labels[:,:-1]
     known_vqcodes = [torch.tensor(json.loads(s)) for s in sources["known_vqcodes"]]
     future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
     # print(known_vqcodes[0])
