@@ -225,8 +225,12 @@ def main(args):
     vq_model.to('cuda')
     vq_model.eval()
     # ==== 加载数据 ====
-    with open("/data/tempdata_val/000000.jsonl", "r", encoding="utf-8") as f:
-        sources = json.loads(f.readline())
+    with open("/data/tempdata/000000.jsonl", "r", encoding="utf-8") as f:
+        # sources = json.loads(f.readline())
+        for i, line in enumerate(f):
+            if i == 999:  # 第1000行的索引是999
+                sources = json.loads(line)
+                break
         future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
         gt_img_tokens = torch.cat(future_vqcodes, dim=0).to("cuda")  # [6*256]
 
