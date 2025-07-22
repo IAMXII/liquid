@@ -470,7 +470,7 @@ def main(args):
             # vq_token = vq_token - len(tokenizer)
             print("vq_token:", vq_token.shape)
             with open("vq.txt", "w", encoding="utf-8") as f:
-                for token_id in vq_token[0]:
+                for token_id in vq_token:
                     f.write(f"{token_id.item()}\n")  # 每个元素一行
             rec_img = image_tokenizer.pil_from_img_toks(vq_token, height=16, width=16)
             ori_img = image_tokenizer.pil_from_img_toks(future_vqcodes[i], height=16, width=16)
