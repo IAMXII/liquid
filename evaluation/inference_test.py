@@ -288,7 +288,7 @@ def main(args):
         )
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [271 * i + 1 for i in range(6)]
+        image_insert_pos = [269 * i + 3 for i in range(6)]
         total_steps = 1626
 
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
@@ -416,8 +416,24 @@ def main(args):
         #     f"Shape mismatch: img_logits {img_logits.shape} vs gt_img_tokens {gt_img_tokens.shape}"
         # print("img shape: ", img_logits.shape)
         # image_ce_loss = criterion(img_logits.reshape(-1, 264192), gt_img_tokens.view(-1))
-        image_ce_loss = criterion(img_logits.reshape(-1, 4096), gt_img_tokens.view(-1))
-        print("📉 Average Image CrossEntropy Loss:", image_ce_loss.item())
+        # image_ce_loss = criterion(img_logits.reshape(-1, 4096), gt_img_tokens.view(-1))
+        # print("📉 Average Image CrossEntropy Loss:", image_ce_loss.item())
+        image_losses = []
+        img_loss_l = img_logits.reshape(-1, 4096)
+
+        for i in range(6):
+            start = i * 256
+            end = (i + 1) * 256
+
+            logits_i = img_loss_l[start:end, :]  # [256, 8192]
+            targets_i = gt_img_tokens.view(-1)[start:end]  # [256]
+
+            loss_i = criterion(logits_i, targets_i)
+            image_losses.append(loss_i.item())
+            print(f"📉 Image {i} CrossEntropy Loss:", loss_i.item())
+
+        avg_loss = sum(image_losses) / len(image_losses)
+        print("📉 Average Image CrossEntropy Loss:", avg_loss)
 
         # ====== 解码图像 & 可视化对比 ======
         vq_token_lists = []
@@ -475,7 +491,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=float, default=5.0, help='Classifier-Free Guidance scale')
     parser.add_argument('--TopP', type=float, default=0.96, help='Top P, max=1.0')
     parser.add_argument('--TopK', type=int, default=4096, help='Top K, max=264192')
-    parser.add_argument('--temperature', type=float, default=0.99, help='sampling temperature, max=1.0')
+    parser.add_argument('--temperature', type=float, default=0.2, help='sampling temperature, max=1.0')
 
     args = parser.parse_args()
     main(args)
