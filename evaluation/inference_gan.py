@@ -444,9 +444,9 @@ def main(args):
         print("小于 256000 的数量为：", count)
         # # 确保找到6个<boi>标记
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
-        boi_pos = np.arange(6) * 269+3
+        # boi_pos = np.arange(6) * 269+3
         img_logits = []
-        for pos in boi_pos:
+        for pos in image_insert_pos:
             start = pos
             end = start + 256
             img_logits.append(full_logits[0, start:end])  # 每张256个 token
@@ -480,8 +480,8 @@ def main(args):
         print("📉 Average Image CrossEntropy Loss:", avg_loss)
         # ====== 解码图像 & 可视化对比 ======
         vq_token_lists = []
-        for i in range(len(boi_pos)):
-            start = boi_pos[i]
+        for i in range(len(image_insert_pos)):
+            start = image_insert_pos[i]
             end = start + 256
             vq_token = generated_ids[start:end]
             vq_token_lists.append(vq_token)
