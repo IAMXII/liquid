@@ -6,6 +6,8 @@ import PIL
 from PIL import Image
 from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM, TextIteratorStreamer
 import os
+
+from torchvision import transforms
 from tqdm import tqdm
 from chameleon.inference.image_tokenizer import ImageTokenizer
 from VQA_Eval.conversation import conv_templates

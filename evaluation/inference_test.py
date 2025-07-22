@@ -11,6 +11,8 @@ from chameleon.inference.image_tokenizer import ImageTokenizer
 from VQA_Eval.conversation import conv_templates
 from threading import Thread
 from torch.nn import functional as F
+
+from torchvision import transforms
 PILtransform = transforms.ToPILImage()
 from torch.nn import CrossEntropyLoss
 import torchvision.transforms as T
