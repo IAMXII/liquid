@@ -412,7 +412,7 @@ def main(args):
         pred_tokens = []
         pred_logits = []
         # image_insert_pos = [269 * i+3 for i in range(6)]
-        image_insert_pos = []
+        image_insert_pos = [0]
         boi_token_id = tokenizer.convert_tokens_to_ids("<boi>")
         num_img_tokens = 256
         generating_image_tokens = True
@@ -462,6 +462,7 @@ def main(args):
                 if next_token.item() == boi_token_id:
                     generating_image_tokens = True
                     image_tokens_remaining = num_img_tokens
+                    image_insert_pos.append(i)
 
                 # if i in [x - 1 for x in image_insert_pos]:
                 #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
