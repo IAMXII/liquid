@@ -322,7 +322,8 @@ def main(args):
             )
 
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
-            next_embed_t = next_embed
+            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
+            # next_embed_t = next_embed
             indices_arhead = []
             # is_last_image_embed = True  # 默认下一步是图像
             if in_image_range:
@@ -350,7 +351,7 @@ def main(args):
 
             # fake id for cache & extend full embedding序列
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
-            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
+
 
             # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
@@ -444,6 +445,7 @@ def main(args):
             start = pos_logits[i]
             end = start + 256
             vq_token = generated_ids[start:end, :].permute(1, 0)
+            print("vq_token:", vq_token.shape)
             vq_token_lists.append(vq_token)
 
         # pic_ori = os.path.basename(pic_path)
