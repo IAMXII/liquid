@@ -100,7 +100,7 @@ def build_vqa_inference_input(tokenizer, sources):
     conv.append_message(conv.roles[0], human_text)
     conv.append_message(conv.roles[1], "")  # 模型生成
     prompt = conv.get_prompt()
-
+    prompt += " "
     # 原始 input_ids 和 attention_mask（还不含图像 token）
     encoded = tokenizer(prompt, return_tensors="pt", padding=True)
     input_ids = encoded["input_ids"][0].tolist()  # 转为 list 方便插入
@@ -422,7 +422,7 @@ def main(args):
             outputs = vqllm(**model_inputs, return_dict=True)
 
             next_token_logits = outputs.logits[:, -1:, :]  # [1, 1, vocab_size]
-            next_token_logits = next_token_logits[:,:,:264192]
+            next_token_logits = next_token_logits[:, :, :264192]
             ###############################################################
             # in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             #
@@ -462,7 +462,6 @@ def main(args):
                 if next_token.item() == boi_token_id:
                     generating_image_tokens = True
                     image_tokens_remaining = num_img_tokens
-
 
                 # if i in [x - 1 for x in image_insert_pos]:
                 #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
@@ -527,7 +526,7 @@ def main(args):
             start = i * 256
             end = (i + 1) * 256
 
-            logits_i = img_loss_l[start:end,:]  # [256, 8192]
+            logits_i = img_loss_l[start:end, :]  # [256, 8192]
             targets_i = gt_img_tokens.view(-1)[start:end]  # [256]
 
             loss_i = criterion(logits_i, targets_i)
