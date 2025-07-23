@@ -394,10 +394,10 @@ def main(args):
     image_tokenizer = ImageTokenizer(cfg_path=vqgan_cfg_path, ckpt_path=vqgan_ckpt_path, device="cuda:0")
 
     # ==== 加载数据 ====
-    with open("/data/tempdata/000000.jsonl", "r", encoding="utf-8") as f:
+    with open("/data/tempdata_val/000000.jsonl", "r", encoding="utf-8") as f:
         # sources = json.loads(f.readline())
         for i, line in enumerate(f):
-            if i == 999:  # 第1000行的索引是999
+            if i == 0:  # 第1000行的索引是999
                 sources = json.loads(line)
                 break
         future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
