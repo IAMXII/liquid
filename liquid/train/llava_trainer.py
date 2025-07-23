@@ -132,6 +132,12 @@ class LengthGroupedSampler(Sampler):
 
 class LLaVATrainer(Trainer):
 
+    def __init__(self, *args, tokenizer=None, **kwargs):
+        super().__init__(*args, tokenizer=tokenizer, **kwargs)
+        self.tokenizer = tokenizer
+        self.save_path = "train_outputs.txt"
+        self.write_count = 0  # 初始化计数器
+
     def compute_loss(self, model, inputs, return_outputs=False):
         outputs = model(**inputs)
         loss = outputs.loss if isinstance(outputs, dict) else outputs[0]
