@@ -102,9 +102,9 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
                  ", now predict the next frames, their waypoints are " + \
                  ", ".join([format_wp(wp) for wp in future_wps])
 
-    gpt_text = "<boi>"
+    gpt_text = ""
 
-    conv = conversation_lib.default_conversation.copy()
+    conv = conversation_lib.conv_templates["gemma"].copy()
     conv.append_message(conv.roles[0], human_text)
     conv.append_message(conv.roles[1], gpt_text)
     prompt = conv.get_prompt()
@@ -297,8 +297,9 @@ def main(args):
         )
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [269 * i for i in range(6)]
-        total_steps = 1626
+        # image_insert_pos = [269 * i for i in range(6)]
+        image_insert_pos = []
+        total_steps = 1617
 
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
 
