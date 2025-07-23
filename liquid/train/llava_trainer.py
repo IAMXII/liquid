@@ -138,31 +138,31 @@ class LLaVATrainer(Trainer):
         self.save_path = "train_outputs.txt"
         self.write_count = 0  # 初始化计数器
 
-    def compute_loss(self, model, inputs, return_outputs=False):
-        outputs = model(**inputs)
-        loss = outputs.loss if isinstance(outputs, dict) else outputs[0]
-
-        # [B, T, V] → [B, T]
-        logits = outputs.logits
-        pred_ids = torch.argmax(logits, dim=-1)  # 每个token的预测
-
-        pred_ids = pred_ids.detach().cpu().tolist()  # 转为 List[List[int]]
-
-        # 判断是否需要清空文件（每写满1000行后清空）
-        if self.write_count % 1000 == 0:
-            mode = 'w'  # overwrite
-        else:
-            mode = 'a'  # append
-
-        with open("logits.txt", mode) as f:
-            for ids in pred_ids:
-                f.write(' '.join(map(str, ids)) + '\n')
-                self.write_count += 1
-
-        if return_outputs:
-            return loss, outputs
-        else:
-            return loss
+    # def compute_loss(self, model, inputs, return_outputs=False):
+    #     outputs = model(**inputs)
+    #     loss = outputs.loss if isinstance(outputs, dict) else outputs[0]
+    #
+    #     # [B, T, V] → [B, T]
+    #     logits = outputs.logits
+    #     pred_ids = torch.argmax(logits, dim=-1)  # 每个token的预测
+    #
+    #     pred_ids = pred_ids.detach().cpu().tolist()  # 转为 List[List[int]]
+    #
+    #     # 判断是否需要清空文件（每写满1000行后清空）
+    #     if self.write_count % 1000 == 0:
+    #         mode = 'w'  # overwrite
+    #     else:
+    #         mode = 'a'  # append
+    #
+    #     with open("logits.txt", mode) as f:
+    #         for ids in pred_ids:
+    #             f.write(' '.join(map(str, ids)) + '\n')
+    #             self.write_count += 1
+    #
+    #     if return_outputs:
+    #         return loss, outputs
+    #     else:
+    #         return loss
 
     def _get_train_sampler(self) -> Optional[torch.utils.data.Sampler]:
         if self.train_dataset is None or not has_length(self.train_dataset):

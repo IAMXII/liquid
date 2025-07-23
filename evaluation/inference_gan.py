@@ -397,7 +397,7 @@ def main(args):
     with open("/data/tempdata_val/000000.jsonl", "r", encoding="utf-8") as f:
         # sources = json.loads(f.readline())
         for i, line in enumerate(f):
-            if i == 0:  # 第1000行的索引是999
+            if i == 100:  # 第1000行的索引是999
                 sources = json.loads(line)
                 break
         future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
