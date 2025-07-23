@@ -286,15 +286,17 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     conv.append_message(conv.roles[0], human_text)
     conv.append_message(conv.roles[1], gpt_text)
     prompt = conv.get_prompt()
+    print(prompt)
     human_ids = \
     tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     # gpt_ids = tokenizer(gpt_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     human_len = len(human_ids) + 256 * 3 + 4
-    # print("human_len:", human_len)
+    print("human_len:", human_len)
 
     input_ids = \
     tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
-
+    print("input_ids:", input_ids[0:10])
+    print("input_ids:", len(input_ids))
     # 替换每对 <boi><eoi> 中间插入 VQ token
     def insert_vqcodes(input_ids, vqcode_list):
         output = []
