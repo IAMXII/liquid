@@ -466,7 +466,6 @@ def main(args):
                 max_prob, max_idx = torch.max(probs, dim=-1)
                 next_token = max_idx
                 # next_token, _ = sample_lw(logits, **sampling_kwargs)
-                print("nextToken2:", next_token)
 
                 # 如果输出了 <boi>，进入图像生成状态
                 if next_token.item() == boi_token_id:
@@ -476,6 +475,8 @@ def main(args):
                 if pre_token[0]>256000:
                     next_token = torch.tensor([[8]]).to("cuda")
                     # continue
+                print("nextToken2:", next_token)
+
                 # if i in [x - 1 for x in image_insert_pos]:
                 #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
                 # elif i in [x + 256 for x in image_insert_pos]:
