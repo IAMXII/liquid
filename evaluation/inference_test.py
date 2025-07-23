@@ -324,12 +324,12 @@ def main(args):
                 attention_mask=attention_mask,
                 past_key_values=past_key_values,
                 input_multi_ids=None,
-                inputs_embeds=inputs_embeds,
+                inputs_embeds=next_embed,
                 return_dict=True,
                 output_attentions=False,
                 output_hidden_states=False,
             )
-
+            past_key_values = outputs.past_key_values
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
 
             # next_embed_t = next_embed
