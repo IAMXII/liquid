@@ -103,6 +103,7 @@ def build_vqa_inference_input(tokenizer, sources):
     conv.append_message(conv.roles[1], "")  # 模型生成
     prompt = conv.get_prompt()
     prompt += " "
+    print(prompt)
     # 原始 input_ids 和 attention_mask（还不含图像 token）
     encoded = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length)
     input_ids = encoded["input_ids"][0].tolist()  # 转为 list 方便插入
