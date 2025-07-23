@@ -95,16 +95,16 @@ def build_vqa_inference_input(tokenizer, sources):
 
     human_text = "We already know three frames and their waypoints: " + ", ".join(
         [make_vqtext(wp) for wp in known_wps]
-    ) + ", now predict the next frame, their waypoints are " + ", ".join([format_wp(wp) for wp in future_wps])
+    ) + ", now predict the next frames, their waypoints are " + ", ".join([format_wp(wp) for wp in future_wps])
 
     from liquid import conversation as conversation_lib
     conv = conversation_lib.default_conversation.copy()
     conv.append_message(conv.roles[0], human_text)
-    conv.append_message(conv.roles[1], "<boi>")  # 模型生成
+    conv.append_message(conv.roles[1], "")  # 模型生成
     prompt = conv.get_prompt()
-    # prompt += " "
+    prompt += " "
     # 原始 input_ids 和 attention_mask（还不含图像 token）
-    encoded = tokenizer(prompt, return_tensors="pt", padding=True)
+    encoded = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length)
     input_ids = encoded["input_ids"][0].tolist()  # 转为 list 方便插入
     attention_mask = encoded["attention_mask"][0].tolist()
 
@@ -404,8 +404,8 @@ def main(args):
 
     # pic_path = sources["pic_path"]
     input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
-    input_ids = input_ids[:,:-256]
-    attention_mask = attention_mask[:,:-256]
+    # input_ids = input_ids[:,:-256]
+    # attention_mask = attention_mask[:,:-256]
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': True}
         cur_len = input_ids.shape[1]
@@ -414,12 +414,12 @@ def main(args):
 
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [269 * i for i in range(6)]
-        # image_insert_pos = [0]
+        # image_insert_pos = [269 * i for i in range(6)]
+        image_insert_pos = []
         boi_token_id = tokenizer.convert_tokens_to_ids("<boi>")
         num_img_tokens = 256
-        generating_image_tokens = True
-        image_tokens_remaining = 256
+        generating_image_tokens = False
+        image_tokens_remaining = 0
         for i in tqdm(range(1626)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
@@ -427,52 +427,52 @@ def main(args):
             next_token_logits = outputs.logits[:, -1:, :]  # [1, 1, vocab_size]
             next_token_logits = next_token_logits[:, :, :264192]
             ###############################################################
-            in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
-
-            # 找出最大值和对应索引
-            # max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
-            # logits_flat = next_token_logits.view(-1)  # 展平成 [vocab_size]
-            # max_val, max_idx = torch.max(logits_flat, dim=0)
-            # print("logit:", logits_flat)
-            # print("最大值:", max_val.item())
-            # print("最大值索引（token id）:", max_idx.item())
-            if in_image_range:
-                next_token, _ = sample(next_token_logits, **sampling_kwargs)
-            else:
-                logits = next_token_logits[:, :, :256000]  # 只保留前256000个token的logits
-                probs = F.softmax(logits, dim=-1)  # [1, 1, 256000]
-
-                # 找出最大值和对应索引
-                max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
-                next_token = max_idx
-            ################################################################
-            # if generating_image_tokens:
+            # in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
+            #
+            # # 找出最大值和对应索引
+            # # max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
+            # # logits_flat = next_token_logits.view(-1)  # 展平成 [vocab_size]
+            # # max_val, max_idx = torch.max(logits_flat, dim=0)
+            # # print("logit:", logits_flat)
+            # # print("最大值:", max_val.item())
+            # # print("最大值索引（token id）:", max_idx.item())
+            # if in_image_range:
             #     next_token, _ = sample(next_token_logits, **sampling_kwargs)
-            #     image_tokens_remaining -= 1
-            #     print("nextToken1:", next_token)
-            #     if image_tokens_remaining == 0:
-            #         generating_image_tokens = False
-            #
-            #
             # else:
-            #     # 普通文本逻辑，只保留前256000个token
-            #     logits = next_token_logits[:, :, :256000]
-            #     # probs = F.softmax(logits, dim=-1)
-            #     # max_prob, max_idx = torch.max(probs, dim=-1)
-            #     # next_token = max_idx
-            #     next_token, _ = sample_lw(logits, **sampling_kwargs)
-            #     print("nextToken2:", next_token)
+            #     logits = next_token_logits[:, :, :256000]  # 只保留前256000个token的logits
+            #     probs = F.softmax(logits, dim=-1)  # [1, 1, 256000]
             #
-            #     # 如果输出了 <boi>，进入图像生成状态
-            #     if next_token.item() == boi_token_id:
-            #         generating_image_tokens = True
-            #         image_tokens_remaining = num_img_tokens
-            #         image_insert_pos.append(i)
+            #     # 找出最大值和对应索引
+            #     max_prob, max_idx = torch.max(probs, dim=-1)  # [1, 1]
+            #     next_token = max_idx
+            ################################################################
+            if generating_image_tokens:
+                next_token, _ = sample(next_token_logits, **sampling_kwargs)
+                image_tokens_remaining -= 1
+                print("nextToken1:", next_token)
+                if image_tokens_remaining == 0:
+                    generating_image_tokens = False
 
-                if i in [x - 1 for x in image_insert_pos]:
-                    next_token = torch.tensor([[7]]).to("cuda")  # <boi>
-                elif i in [x + 256 for x in image_insert_pos]:
-                    next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
+
+            else:
+                # 普通文本逻辑，只保留前256000个token
+                logits = next_token_logits[:, :, :256000]
+                probs = F.softmax(logits, dim=-1)
+                max_prob, max_idx = torch.max(probs, dim=-1)
+                next_token = max_idx
+                # next_token, _ = sample_lw(logits, **sampling_kwargs)
+                print("nextToken2:", next_token)
+
+                # 如果输出了 <boi>，进入图像生成状态
+                if next_token.item() == boi_token_id:
+                    generating_image_tokens = True
+                    image_tokens_remaining = num_img_tokens
+                    image_insert_pos.append(i)
+
+                # if i in [x - 1 for x in image_insert_pos]:
+                #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
+                # elif i in [x + 256 for x in image_insert_pos]:
+                #     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
 
             pred_tokens.append(next_token)
             pred_logits.append(next_token_logits)
