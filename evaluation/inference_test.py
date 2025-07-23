@@ -299,7 +299,7 @@ def main(args):
         pred_logits = []
         image_insert_pos = [269 * i for i in range(6)]
         total_steps = 1626
-
+        next_embed = inputs_embeds
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
 
         for i in tqdm(range(total_steps)):
