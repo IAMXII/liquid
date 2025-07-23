@@ -138,7 +138,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
                 output.append(token)
                 i += 1
         # eos_id = tokenizer.convert_tokens_to_ids("<eos>")
-        output.append(1)  # <eos>
+        # output.append(1)  # <eos>
         return torch.tensor(output, dtype=torch.long)
 
     input_ids = insert_image_token_placeholders(input_ids)
