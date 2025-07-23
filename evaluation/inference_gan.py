@@ -98,12 +98,12 @@ def build_vqa_inference_input(tokenizer, sources):
     ) + ", now predict the next frames, their waypoints are " + ", ".join([format_wp(wp) for wp in future_wps])
 
     from liquid import conversation as conversation_lib
-    conv = conversation_lib.default_conversation.copy()
+    conv = conversation_lib.conv_templates["gemma"].copy()
     conv.append_message(conv.roles[0], human_text)
     conv.append_message(conv.roles[1], "")  # 模型生成
     prompt = conv.get_prompt()
-    prompt += " "
-    print(prompt)
+    # prompt += " "
+    # print(prompt)
     # 原始 input_ids 和 attention_mask（还不含图像 token）
     encoded = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length)
     input_ids = encoded["input_ids"][0].tolist()  # 转为 list 方便插入
@@ -421,7 +421,7 @@ def main(args):
         num_img_tokens = 256
         generating_image_tokens = False
         image_tokens_remaining = 0
-        for i in tqdm(range(1626)):
+        for i in tqdm(range(1617)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
 

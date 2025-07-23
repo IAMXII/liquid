@@ -286,17 +286,29 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     conv.append_message(conv.roles[0], human_text)
     conv.append_message(conv.roles[1], gpt_text)
     prompt = conv.get_prompt()
-    print(prompt)
-    human_ids = \
-    tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
-    # gpt_ids = tokenizer(gpt_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
-    human_len = len(human_ids) + 256 * 3 + 4
-    print("human_len:", human_len)
+    # print(prompt)
+    # human_ids = \
+    # tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
+    # # gpt_ids = tokenizer(gpt_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
+    # human_len = len(human_ids) + 256 * 3 + 4
+    # print("human_len:", human_len)
 
     input_ids = \
     tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
-    print("input_ids:", input_ids[0:10])
-    print("input_ids:", len(input_ids))
+
+    # 找出所有值为 7 的位置索引
+    target_token_id = 7
+    indices = (input_ids == target_token_id).nonzero(as_tuple=True)[0]
+
+    # 取出第四个（索引从0开始，对应第5个元素）
+    position = 0
+    if len(indices) >= 4:
+        position = indices[3].item()  # 第四个值为7的位置（索引）
+        # print("第四个值为7的token位置为：", position)
+    else:
+        print("input_ids中不足4个值为7的token")
+    # print("input_ids:", input_ids[0:10])
+    # print("input_ids:", len(input_ids))
     # 替换每对 <boi><eoi> 中间插入 VQ token
     def insert_vqcodes(input_ids, vqcode_list):
         output = []
@@ -336,7 +348,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     # start_idx = len(input_ids)
     # print("total length with vq",len(input_ids))
     labels = input_ids.clone()
-    labels[:human_len] = IGNORE_INDEX
+    labels[:position] = IGNORE_INDEX
 
     return input_ids, labels
 
