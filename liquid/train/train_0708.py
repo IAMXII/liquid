@@ -84,6 +84,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
 
     input_ids = \
     tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
+    print("input_ids: \n",input_ids)
     instruction_len = len(
         tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0])
     instruction_len += 1 * 3 + 4
