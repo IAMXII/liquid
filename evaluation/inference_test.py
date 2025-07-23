@@ -297,9 +297,9 @@ def main(args):
         )
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [269 * i for i in range(1)]
-        total_steps = 256
-        next_embed = inputs_embeds
+        image_insert_pos = [269 * i for i in range(6)]
+        total_steps = 1626
+
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
 
         for i in tqdm(range(total_steps)):
@@ -313,7 +313,7 @@ def main(args):
             # else:
             #     input_chunk = inputs_embeds
 
-            seq_len = next_embed.size(1)
+            seq_len = inputs_embeds.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
@@ -324,12 +324,12 @@ def main(args):
                 attention_mask=attention_mask,
                 past_key_values=past_key_values,
                 input_multi_ids=None,
-                inputs_embeds=next_embed,
+                inputs_embeds=inputs_embeds,
                 return_dict=True,
                 output_attentions=False,
                 output_hidden_states=False,
             )
-            past_key_values = outputs.past_key_values
+            past_key_values = outputs['past_key_values']
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
 
             # next_embed_t = next_embed
@@ -416,7 +416,7 @@ def main(args):
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
         # boi_pos = np.arange(6) * 271+1
         img_logits = []
-        pos_logits = np.arange(1)*256
+        pos_logits = np.arange(6)*256
         for pos in pos_logits:
             start = pos
             end = start + 256
@@ -435,7 +435,7 @@ def main(args):
         image_losses = []
         img_loss_l = img_logits.reshape(-1, 4096)
 
-        for i in range(1):
+        for i in range(6):
             start = i * 256
             end = (i + 1) * 256
 
