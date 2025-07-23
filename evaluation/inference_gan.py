@@ -421,7 +421,7 @@ def main(args):
         num_img_tokens = 256
         generating_image_tokens = False
         image_tokens_remaining = 0
-        next_token = 0
+        next_token = torch.tensor([[0]]).to("cuda")
         for i in tqdm(range(1617)):
             model_inputs = vqllm.prepare_inputs_for_generation(input_ids, **model_kwargs)
             outputs = vqllm(**model_inputs, return_dict=True)
