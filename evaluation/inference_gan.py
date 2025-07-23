@@ -475,7 +475,7 @@ def main(args):
                     image_insert_pos.append(i)
                 if pre_token[0]>256000:
                     next_token = torch.tensor([[8]]).to("cuda")
-                    continue
+                    # continue
                 # if i in [x - 1 for x in image_insert_pos]:
                 #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
                 # elif i in [x + 256 for x in image_insert_pos]:
