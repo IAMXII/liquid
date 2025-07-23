@@ -456,6 +456,8 @@ def main(args):
 
 
             else:
+                pre_token = next_token
+
                 # 普通文本逻辑，只保留前256000个token
                 logits = next_token_logits[:, :, :256000]
                 probs = F.softmax(logits, dim=-1)
@@ -469,7 +471,9 @@ def main(args):
                     generating_image_tokens = True
                     image_tokens_remaining = num_img_tokens
                     image_insert_pos.append(i)
-
+                if pre_token[0]>256000:
+                    next_token = torch.tensor([[8]]).to("cuda")
+                    continue
                 # if i in [x - 1 for x in image_insert_pos]:
                 #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
                 # elif i in [x + 256 for x in image_insert_pos]:
