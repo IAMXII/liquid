@@ -416,7 +416,7 @@ def main(args):
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
         # boi_pos = np.arange(6) * 271+1
         img_logits = []
-        pos_logits = np.arange(6)*256
+        pos_logits = np.arange(1)*256
         for pos in pos_logits:
             start = pos
             end = start + 256
