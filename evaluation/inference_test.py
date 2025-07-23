@@ -435,7 +435,7 @@ def main(args):
         image_losses = []
         img_loss_l = img_logits.reshape(-1, 4096)
 
-        for i in range(6):
+        for i in range(1):
             start = i * 256
             end = (i + 1) * 256
 
