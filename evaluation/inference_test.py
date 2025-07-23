@@ -299,12 +299,16 @@ def main(args):
         pred_logits = []
         # image_insert_pos = [269 * i for i in range(6)]
         image_insert_pos = []
+        boi_token_id = tokenizer.convert_tokens_to_ids("<boi>")
+        num_img_tokens = 256
+        generating_image_tokens = False
+        image_tokens_remaining = 0
         total_steps = 1617
 
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
 
         for i in tqdm(range(total_steps)):
-            in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
+            # in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             # 决定 inputs_embeds 的裁剪范围
             # if is_last_image_embed:
             #     # 查找当前图像的插入位置，并裁剪到其开始前
