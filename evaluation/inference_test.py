@@ -313,7 +313,7 @@ def main(args):
             # else:
             #     input_chunk = inputs_embeds
 
-            seq_len = inputs_embeds.size(1)
+            seq_len = next_embed.size(1)
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
