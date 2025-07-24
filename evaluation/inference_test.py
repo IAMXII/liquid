@@ -313,7 +313,7 @@ def main(args):
         num_img_tokens = 256
         generating_image_tokens = False
         image_tokens_remaining = 0
-        total_steps = 1617
+        total_steps = 1622
         boi_embed = vqllm.get_model().embed_tokens(boi_token_id)
         eoi_embed = vqllm.get_model().embed_tokens(eoi_token_id)
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
