@@ -113,9 +113,9 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
 
     input_ids = \
         tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
-    instruction_len = len(
-        tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0])
-    instruction_len = 910
+    # instruction_len = len(
+    #     tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0])
+    # instruction_len = instruction_len+1*3+4
 
     # 替换每对 <boi><eoi> 中插入 IMAGE_TOKEN_INDEX
     def insert_image_token_placeholders(input_ids):
@@ -144,9 +144,18 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
         return torch.tensor(output, dtype=torch.long)
 
     input_ids = insert_image_token_placeholders(input_ids)
+    target_token_id = 7
+    indices = (input_ids == target_token_id).nonzero(as_tuple=True)[0]
 
+    # 取出第四个（索引从0开始，对应第5个元素）
+    position = 0
+    if len(indices) >= 4:
+        position = indices[3].item()  # 第四个值为7的位置（索引）
+        # print("第四个值为7的token位置为：", position)
+    else:
+        print("input_ids中不足4个值为7的token")
     labels = input_ids.clone()
-    labels[:instruction_len] = IGNORE_INDEX
+    labels[:position] = IGNORE_INDEX
 
     return input_ids.unsqueeze(0).to("cuda"), labels.unsqueeze(0).to("cuda")
 
@@ -387,6 +396,7 @@ def main(args):
                     output_attentions=False,
                     output_hidden_states=False,
                 )
+                print("output:",outputs.shape)
                 hidden_states = outputs[0]
                 logits = vqllm.lm_head(hidden_states)
                 logits = logits.float()
