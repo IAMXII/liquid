@@ -403,13 +403,13 @@ def main(args):
                 logits = logits[:, :256000]
                 probs = F.softmax(logits, dim=-1)
                 max_prob, max_idx = torch.max(probs, dim=-1)
-                print("next token: ",max_idx)
+
                 next_token = torch.tensor([[max_idx]]).to("cuda")
                 if i in [x - 1 for x in image_insert_pos]:
                     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
                 elif i in [x + 256 for x in image_insert_pos]:
                     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
-
+                print("next token: ", next_token.item())
                 next_embed = vqllm.get_model().embed_tokens(next_token)
                 # print("logits", logits.shape)
                 # with open("input_ids.txt", "w", encoding="utf-8") as f:
