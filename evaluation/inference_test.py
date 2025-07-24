@@ -110,13 +110,13 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     conv.append_message(conv.roles[0], human_text)
     conv.append_message(conv.roles[1], gpt_text)
     prompt = conv.get_prompt()
-    print("prompt:",prompt)
+    # print("prompt:",prompt)
     input_ids = \
         tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     # instruction_len = len(
     #     tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0])
     # instruction_len = instruction_len+1*3+4
-    print("input ids:", input_ids)
+    # print("input ids:", input_ids)
     # 替换每对 <boi><eoi> 中插入 IMAGE_TOKEN_INDEX
     def insert_image_token_placeholders(input_ids):
         output = []
@@ -426,7 +426,7 @@ def main(args):
                     image_insert_pos.append(i)
                 if image_tokens_remaining == 0:
                     next_embed = eoi_embed
-                print("nextToken2:", next_embed)
+                # print("nextToken2:", next_embed)
 
 
             # fake id for cache & extend full embedding序列
@@ -468,7 +468,7 @@ def main(args):
         # print("pred_logits:", pred_logits[0].shape)
         # generated_ids = torch.cat(pred_tokens, dim=0)  # [T]
         generated_ids = torch.stack(pred_tokens, dim=-1)
-        print("generated_ids:", generated_ids.shape)
+        # print("generated_ids:", generated_ids.shape)
         full_logits = torch.cat(pred_logits, dim=0)  # [1, T, vocab_size]
         full_logits = full_logits.permute(1, 0, 2)  # shape: [X, B, Y]
         # full_logits = full_logits.reshape(-1, full_logits.size(-1))  # shape: [X*B, Y]
