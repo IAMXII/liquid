@@ -280,7 +280,7 @@ def main(args):
     new_input_ids = torch.tensor([new_ids], dtype=input_ids.dtype, device=input_ids.device)
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': True}
-        cur_len = input_ids.shape[1] + 256 * 3
+        cur_len = input_ids.shape[1]
         model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
         model_kwargs["cache_position"] = torch.arange(cur_len, device="cuda:0")
 
