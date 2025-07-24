@@ -334,7 +334,7 @@ def main(args):
             position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(0)
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
-            # attention_mask = attention_mask[:, -seq_len:]
+            attention_mask = attention_mask[:, -seq_len:]
             if in_image_range:
                 outputs = vqllm.T2I_forward_withcache(
                     input_ids=input_ids,
@@ -347,7 +347,7 @@ def main(args):
                     output_attentions=False,
                     output_hidden_states=False,
                 )
-                # past_key_values = outputs['past_key_values']
+                past_key_values = outputs['past_key_values']
                 print(outputs.keys())
 
                 next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
@@ -395,6 +395,7 @@ def main(args):
                     output_attentions=False,
                     output_hidden_states=False,
                 )
+                past_key_values = outputs['past_key_values']
                 print("output:",len(outputs))
                 hidden_states = outputs[0]
                 logits = vqllm.lm_head(hidden_states)
@@ -438,7 +439,8 @@ def main(args):
             # fake id for cache & extend full embedding序列
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
 
-            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)
+            inputs_embeds = next_embed
+            # inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
             # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
 
