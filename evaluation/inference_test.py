@@ -399,7 +399,7 @@ def main(args):
                 logits = vqllm.lm_head(hidden_states)
                 logits = logits.float()
                 logits = logits[:,-1,:]
-                logits = next_token_logits[:, :, :256000]
+                logits = logits[:, :, :256000]
                 probs = F.softmax(logits, dim=-1)
                 max_prob, max_idx = torch.max(probs, dim=-1)
                 next_token = torch.tensor([[max_idx]]).to("cuda")
