@@ -299,7 +299,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     # 找出所有值为 7 的位置索引
     target_token_id = 7
     indices = (input_ids == target_token_id).nonzero(as_tuple=True)[0]
-
+    # print(input_ids)
     # 取出第四个（索引从0开始，对应第5个元素）
     position = 0
     if len(indices) >= 4:
@@ -307,7 +307,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
         print("第四个值为7的token位置为：", position)
     else:
         print("input_ids中不足4个值为7的token")
-    # print("input_ids:", input_ids[0:10])
+    print("input_ids:", input_ids)
     # print("input_ids:", len(input_ids))
     # 替换每对 <boi><eoi> 中间插入 VQ token
     def insert_vqcodes(input_ids, vqcode_list):
