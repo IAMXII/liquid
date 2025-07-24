@@ -13,6 +13,7 @@ from threading import Thread
 from torch.nn import functional as F
 
 from torchvision import transforms
+
 PILtransform = transforms.ToPILImage()
 from torch.nn import CrossEntropyLoss
 import torchvision.transforms as T
@@ -29,6 +30,7 @@ from liquid.mm_utils import tokenizer_image_token
 from liquid.model.language_model.mini_gemini_gemma import MiniGeminiGemmaForCausalLM
 from config import Args
 from unitok import UniTok
+
 
 def top_k_top_p_filtering(
         logits,
@@ -113,7 +115,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
         tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     instruction_len = len(
         tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0])
-    instruction_len += 1 * 3 + 4
+    instruction_len = 910
 
     # 替换每对 <boi><eoi> 中插入 IMAGE_TOKEN_INDEX
     def insert_image_token_placeholders(input_ids):
@@ -238,8 +240,8 @@ def main(args):
     # input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
 
     input_ids, labels = build_vqa_pair_with_vqcode(tokenizer, sources)
-    input_ids = input_ids[:,:-1]
-    labels = labels[:,:-1]
+    input_ids = input_ids[:, :-1]
+    labels = labels[:, :-1]
     known_vqcodes = [torch.tensor(json.loads(s)) for s in sources["known_vqcodes"]]
     future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
     # print(known_vqcodes[0])
@@ -271,7 +273,7 @@ def main(args):
     new_input_ids = torch.tensor([new_ids], dtype=input_ids.dtype, device=input_ids.device)
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': True}
-        cur_len = input_ids.shape[1]+256*3
+        cur_len = input_ids.shape[1] + 256 * 3
         model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
         model_kwargs["cache_position"] = torch.arange(cur_len, device="cuda:0")
 
@@ -300,15 +302,17 @@ def main(args):
         # image_insert_pos = [269 * i for i in range(6)]
         image_insert_pos = []
         boi_token_id = tokenizer.convert_tokens_to_ids("<boi>")
+        eoi_token_id = tokenizer.convert_tokens_to_ids("<eoi>")
         num_img_tokens = 256
         generating_image_tokens = False
         image_tokens_remaining = 0
         total_steps = 1617
-
+        boi_embed = vqllm.get_model().embed_tokens(boi_token_id)
+        eoi_embed = vqllm.get_model().embed_tokens(eoi_token_id)
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
 
         for i in tqdm(range(total_steps)):
-            # in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
+
             # 决定 inputs_embeds 的裁剪范围
             # if is_last_image_embed:
             #     # 查找当前图像的插入位置，并裁剪到其开始前
@@ -340,8 +344,8 @@ def main(args):
             # next_embed_t = next_embed
             indices_arhead = []
             # is_last_image_embed = True  # 默认下一步是图像
-            if in_image_range:
 
+            if generating_image_tokens:
                 for i_head in range(num_codebooks):
                     ar_next_embed = vqllm.ar_head(
                         inputs_embeds=next_embed,
@@ -364,6 +368,32 @@ def main(args):
                 pred_tokens.append(torch.cat(indices_arhead, dim=1))
                 next_token = torch.stack(pred_tokens, dim=-1)
                 next_embed = vqllm.get_model().multi_embedder(next_token)
+                image_tokens_remaining -= 1
+                if image_tokens_remaining == 0:
+                    generating_image_tokens = False
+
+
+            else:
+
+
+
+                # # 普通文本逻辑，只保留前256000个token
+                # logits = next_token_logits[:, :, :256000]
+                # probs = F.softmax(logits, dim=-1)
+                # max_prob, max_idx = torch.max(probs, dim=-1)
+                # next_token = max_idx
+                # # next_token, _ = sample_lw(logits, **sampling_kwargs)
+
+                # 如果输出了 <boi>，进入图像生成状态
+                if next_embed.item() == boi_embed:
+                    generating_image_tokens = True
+                    image_tokens_remaining = num_img_tokens
+                    image_insert_pos.append(i)
+                if image_tokens_remaining == 0:
+                    next_embed = eoi_embed
+                print("nextToken2:", next_embed)
+
+
             # fake id for cache & extend full embedding序列
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
 
@@ -372,9 +402,7 @@ def main(args):
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
 
             # 判断当前位置是否是插图区域，用于决定 new_input_ids 拼接什么 token
-
-
-
+            in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             if in_image_range:
                 new_input_ids = torch.cat([new_input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]]).to("cuda")], dim=-1)
             else:
@@ -387,7 +415,6 @@ def main(args):
                 else:
                     next_token = torch.tensor([[0]]).to("cuda")
                 new_input_ids = torch.cat([new_input_ids, next_token], dim=-1)
-
 
             model_kwargs = vqllm._update_model_kwargs_for_generation(
                 outputs, model_kwargs, is_encoder_decoder=vqllm.config.is_encoder_decoder,
@@ -421,7 +448,7 @@ def main(args):
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
         # boi_pos = np.arange(6) * 271+1
         img_logits = []
-        pos_logits = np.arange(6)*256
+        pos_logits = np.arange(6) * 256
         for pos in pos_logits:
             start = pos
             end = start + 256
