@@ -155,7 +155,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     else:
         print("input_ids中不足4个值为7的token")
     labels = input_ids.clone()
-    labels[:position] = IGNORE_INDEX
+    # labels[:position] = IGNORE_INDEX
 
     return input_ids.unsqueeze(0).to("cuda"), labels.unsqueeze(0).to("cuda")
 
@@ -396,7 +396,7 @@ def main(args):
                     output_attentions=False,
                     output_hidden_states=False,
                 )
-                print("output:",outputs.shape)
+                print("output:",outputs)
                 hidden_states = outputs[0]
                 logits = vqllm.lm_head(hidden_states)
                 logits = logits.float()
