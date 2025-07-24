@@ -398,11 +398,18 @@ def main(args):
                 hidden_states = outputs[0]
                 logits = vqllm.lm_head(hidden_states)
                 logits = logits.float()
-                print("logits", logits.shape)
-                with open("input_ids.txt", "w", encoding="utf-8") as f:
-                    for token_id in logits:
-                        f.write(f"{token_id.item()}\n")  # 每个元素一行
-                shift_logits = logits[..., :-1, :].contiguous()
+                logits = logits[:,-1,:]
+                logits = next_token_logits[:, :, :256000]
+                probs = F.softmax(logits, dim=-1)
+                max_prob, max_idx = torch.max(probs, dim=-1)
+                next_token = torch.tensor([[max_idx]]).to("cuda")
+
+                next_embed = vqllm.get_model().embed_tokens(next_token)
+                # print("logits", logits.shape)
+                # with open("input_ids.txt", "w", encoding="utf-8") as f:
+                #     for token_id in logits:
+                #         f.write(f"{token_id.item()}\n")  # 每个元素一行
+                # shift_logits = logits[..., :-1, :].contiguous()
 
 
                 # # 普通文本逻辑，只保留前256000个token
