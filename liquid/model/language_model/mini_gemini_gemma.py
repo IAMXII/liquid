@@ -135,6 +135,20 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous()
             print("shift_logits", shift_logits.shape)
+            pred_ids = torch.argmax(shift_logits, dim=-1)  # 每个token的预测
+
+            pred_ids = pred_ids.detach().cpu().tolist()  # 转为 List[List[int]]
+
+            # 判断是否需要清空文件（每写满1000行后清空）
+            if self.write_count % 500 == 0:
+                mode = 'w'  # overwrite
+            else:
+                mode = 'a'  # append
+
+            with open("logits.txt", mode) as f:
+                for ids in pred_ids:
+                    f.write(' '.join(map(str, ids)) + '\n')
+                    self.write_count += 1
             # print("shift_labels", shift_labels.shape)
             # with open("debug_output.txt", "w") as f:
             #     f.write(str(labels))
