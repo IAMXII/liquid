@@ -420,7 +420,7 @@ def main(args):
                 # # next_token, _ = sample_lw(logits, **sampling_kwargs)
 
                 # 如果输出了 <boi>，进入图像生成状态
-                if next_embed == boi_embed:
+                if next_token.item() == 7:
                     generating_image_tokens = True
                     image_tokens_remaining = num_img_tokens
                     image_insert_pos.append(i)
