@@ -402,6 +402,7 @@ def main(args):
                 logits = logits[:, :256000]
                 probs = F.softmax(logits, dim=-1)
                 max_prob, max_idx = torch.max(probs, dim=-1)
+                print("next token: ",max_idx)
                 next_token = torch.tensor([[max_idx]]).to("cuda")
 
                 next_embed = vqllm.get_model().embed_tokens(next_token)
