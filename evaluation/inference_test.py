@@ -327,29 +327,28 @@ def main(args):
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
             # attention_mask = attention_mask[:, -seq_len:]
-            outputs = vqllm.T2I_forward_withcache(
-                input_ids=input_ids,
-                position_ids=position_ids,
-                attention_mask=attention_mask,
-                past_key_values=past_key_values,
-                input_multi_ids=None,
-                inputs_embeds=inputs_embeds,
-                return_dict=True,
-                output_attentions=False,
-                output_hidden_states=False,
-            )
-            # past_key_values = outputs['past_key_values']
-            print(outputs.keys())
-            with open("input_ids.txt", "w", encoding="utf-8") as f:
-                for token_id in outputs['logits']:
-                    f.write(f"{token_id.item()}\n")  # 每个元素一行
-            next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
-
-            # next_embed_t = next_embed
-            indices_arhead = []
-            # is_last_image_embed = True  # 默认下一步是图像
-
             if generating_image_tokens:
+                outputs = vqllm.T2I_forward_withcache(
+                    input_ids=input_ids,
+                    position_ids=position_ids,
+                    attention_mask=attention_mask,
+                    past_key_values=past_key_values,
+                    input_multi_ids=None,
+                    inputs_embeds=inputs_embeds,
+                    return_dict=True,
+                    output_attentions=False,
+                    output_hidden_states=False,
+                )
+                # past_key_values = outputs['past_key_values']
+                print(outputs.keys())
+
+                next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
+
+                # next_embed_t = next_embed
+                indices_arhead = []
+                # is_last_image_embed = True  # 默认下一步是图像
+
+
                 for i_head in range(num_codebooks):
                     ar_next_embed = vqllm.ar_head(
                         inputs_embeds=next_embed,
@@ -378,7 +377,25 @@ def main(args):
 
 
             else:
-
+                outputs = vqllm.model(
+                    input_ids=input_ids,
+                    position_ids=position_ids,
+                    attention_mask=attention_mask,
+                    past_key_values=past_key_values,
+                    input_multi_ids=None,
+                    inputs_embeds=inputs_embeds,
+                    return_dict=True,
+                    output_attentions=False,
+                    output_hidden_states=False,
+                )
+                hidden_states = outputs[0]
+                logits = vqllm.lm_head(hidden_states)
+                logits = logits.float()
+                print("logits", logits.shape)
+                with open("input_ids.txt", "w", encoding="utf-8") as f:
+                    for token_id in logits:
+                        f.write(f"{token_id.item()}\n")  # 每个元素一行
+                shift_logits = logits[..., :-1, :].contiguous()
 
 
                 # # 普通文本逻辑，只保留前256000个token
