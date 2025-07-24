@@ -472,7 +472,7 @@ def main(args):
                     generating_image_tokens = True
                     image_tokens_remaining = num_img_tokens
                     image_insert_pos.append(i)
-                if pre_token[0]>256000:
+                if pre_token[0] > 256000:
                     next_token = torch.tensor([[8]]).to("cuda")
                     # continue
                 print("nextToken2:", next_token)

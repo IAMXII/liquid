@@ -110,13 +110,13 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     conv.append_message(conv.roles[0], human_text)
     conv.append_message(conv.roles[1], gpt_text)
     prompt = conv.get_prompt()
-
+    print("prompt:",prompt)
     input_ids = \
         tokenizer(prompt, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0]
     # instruction_len = len(
     #     tokenizer(human_text, return_tensors="pt", truncation=True, max_length=tokenizer.model_max_length).input_ids[0])
     # instruction_len = instruction_len+1*3+4
-
+    print("input ids:", input_ids)
     # 替换每对 <boi><eoi> 中插入 IMAGE_TOKEN_INDEX
     def insert_image_token_placeholders(input_ids):
         output = []
@@ -249,8 +249,6 @@ def main(args):
     # input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
 
     input_ids, labels = build_vqa_pair_with_vqcode(tokenizer, sources)
-    input_ids = input_ids[:, :-1]
-    labels = labels[:, :-1]
     known_vqcodes = [torch.tensor(json.loads(s)) for s in sources["known_vqcodes"]]
     future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
     # print(known_vqcodes[0])
