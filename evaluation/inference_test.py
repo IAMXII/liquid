@@ -306,8 +306,8 @@ def main(args):
         )
         pred_tokens = []
         pred_logits = []
-        # image_insert_pos = [269 * i for i in range(6)]
-        image_insert_pos = []
+        image_insert_pos = [270 * i+1 for i in range(6)]
+        # image_insert_pos = []
         boi_token_id = torch.tensor([[7]]).to("cuda")
         eoi_token_id = torch.tensor([[8]]).to("cuda")
         num_img_tokens = 256
@@ -318,8 +318,9 @@ def main(args):
         eoi_embed = vqllm.get_model().embed_tokens(eoi_token_id)
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
         print("input embeds: ", inputs_embeds.shape)
-        for i in tqdm(range(total_steps)):
 
+        for i in tqdm(range(total_steps)):
+            in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
             # 决定 inputs_embeds 的裁剪范围
             # if is_last_image_embed:
             #     # 查找当前图像的插入位置，并裁剪到其开始前
@@ -334,7 +335,7 @@ def main(args):
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
             # attention_mask = attention_mask[:, -seq_len:]
-            if generating_image_tokens:
+            if in_image_range:
                 outputs = vqllm.T2I_forward_withcache(
                     input_ids=input_ids,
                     position_ids=position_ids,
@@ -404,6 +405,10 @@ def main(args):
                 max_prob, max_idx = torch.max(probs, dim=-1)
                 print("next token: ",max_idx)
                 next_token = torch.tensor([[max_idx]]).to("cuda")
+                if i in [x - 1 for x in image_insert_pos]:
+                    next_token = torch.tensor([[7]]).to("cuda")  # <boi>
+                elif i in [x + 256 for x in image_insert_pos]:
+                    next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
 
                 next_embed = vqllm.get_model().embed_tokens(next_token)
                 # print("logits", logits.shape)
@@ -421,12 +426,12 @@ def main(args):
                 # # next_token, _ = sample_lw(logits, **sampling_kwargs)
 
                 # 如果输出了 <boi>，进入图像生成状态
-                if next_token.item() == 7:
-                    generating_image_tokens = True
-                    image_tokens_remaining = num_img_tokens
-                    image_insert_pos.append(i)
-                if image_tokens_remaining == 0:
-                    next_embed = eoi_embed
+                # if next_token.item() == 7:
+                #     generating_image_tokens = True
+                #     image_tokens_remaining = num_img_tokens
+                #     image_insert_pos.append(i)
+                # if image_tokens_remaining == 0:
+                #     next_embed = eoi_embed
                 # print("nextToken2:", next_embed)
 
 
@@ -438,7 +443,7 @@ def main(args):
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
 
             # 判断当前位置是否是插图区域，用于决定 new_input_ids 拼接什么 token
-            in_image_range = any(p <= i < p + 256 for p in image_insert_pos)
+
             if in_image_range:
                 new_input_ids = torch.cat([new_input_ids, torch.tensor([[IMAGE_TOKEN_INDEX]]).to("cuda")], dim=-1)
             else:
