@@ -304,7 +304,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     position = 0
     if len(indices) >= 4:
         position = indices[3].item()  # 第四个值为7的位置（索引）
-        # print("第四个值为7的token位置为：", position)
+        print("第四个值为7的token位置为：", position)
     else:
         print("input_ids中不足4个值为7的token")
     # print("input_ids:", input_ids[0:10])
