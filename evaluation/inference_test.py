@@ -301,8 +301,8 @@ def main(args):
         pred_logits = []
         # image_insert_pos = [269 * i for i in range(6)]
         image_insert_pos = []
-        boi_token_id = tokenizer.convert_tokens_to_ids("<boi>")
-        eoi_token_id = tokenizer.convert_tokens_to_ids("<eoi>")
+        boi_token_id = torch.tensor([[7]]).to("cuda")
+        eoi_token_id = torch.tensor([[8]]).to("cuda")
         num_img_tokens = 256
         generating_image_tokens = False
         image_tokens_remaining = 0
@@ -339,6 +339,10 @@ def main(args):
                 output_hidden_states=False,
             )
             # past_key_values = outputs['past_key_values']
+            print(outputs['logits'].shape)
+            with open("input_ids.txt", "w", encoding="utf-8") as f:
+                for token_id in outputs['logits']:
+                    f.write(f"{token_id.item()}\n")  # 每个元素一行
             next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
 
             # next_embed_t = next_embed
