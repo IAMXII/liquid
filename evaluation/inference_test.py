@@ -339,7 +339,7 @@ def main(args):
                 output_hidden_states=False,
             )
             # past_key_values = outputs['past_key_values']
-            print(outputs['logits'].shape)
+            print(outputs.keys())
             with open("input_ids.txt", "w", encoding="utf-8") as f:
                 for token_id in outputs['logits']:
                     f.write(f"{token_id.item()}\n")  # 每个元素一行
