@@ -319,7 +319,7 @@ def main(args):
         boi_embed = vqllm.get_model().embed_tokens(boi_token_id)
         eoi_embed = vqllm.get_model().embed_tokens(eoi_token_id)
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
-
+        print("input embeds: ", inputs_embeds.shape)
         for i in tqdm(range(total_steps)):
 
             # 决定 inputs_embeds 的裁剪范围
@@ -396,7 +396,7 @@ def main(args):
                     output_attentions=False,
                     output_hidden_states=False,
                 )
-                print("output:",outputs)
+                print("output:",len(outputs))
                 hidden_states = outputs[0]
                 logits = vqllm.lm_head(hidden_states)
                 logits = logits.float()
