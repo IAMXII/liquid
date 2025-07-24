@@ -382,7 +382,6 @@ def main(args):
                     position_ids=position_ids,
                     attention_mask=attention_mask,
                     past_key_values=past_key_values,
-                    input_multi_ids=None,
                     inputs_embeds=inputs_embeds,
                     return_dict=True,
                     output_attentions=False,
