@@ -134,7 +134,7 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
         if labels is not None:
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous()
-            # print("shift_logits", shift_logits.shape)
+            print("shift_logits", shift_logits.shape)
             # print("shift_labels", shift_labels.shape)
             # with open("debug_output.txt", "w") as f:
             #     f.write(str(labels))
