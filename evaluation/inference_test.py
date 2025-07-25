@@ -344,12 +344,11 @@ def main(args):
                     past_key_values=past_key_values,
                     input_multi_ids=None,
                     inputs_embeds=inputs_embeds,
-                    use_cache=True,
                     return_dict=True,
                     output_attentions=False,
                     output_hidden_states=False,
                 )
-                past_key_values = outputs['past_key_values']
+                # past_key_values = outputs['past_key_values']
                 print(outputs.keys())
 
                 next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
@@ -393,12 +392,11 @@ def main(args):
                     attention_mask=attention_mask,
                     past_key_values=past_key_values,
                     inputs_embeds=inputs_embeds,
-                    use_cache=True,
                     return_dict=True,
                     output_attentions=False,
                     output_hidden_states=False,
                 )
-                past_key_values = outputs['past_key_values']
+                # past_key_values = outputs['past_key_values']
                 print("output:",len(outputs))
                 hidden_states = outputs[0]
                 logits = vqllm.lm_head(hidden_states)
@@ -442,8 +440,8 @@ def main(args):
             # fake id for cache & extend full embedding序列
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
 
-            inputs_embeds = next_embed
-            # inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
+            # inputs_embeds = next_embed
+            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
             # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
 
