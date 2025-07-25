@@ -58,7 +58,7 @@ class MiniGeminiGemmaForCausalLM(GemmaForCausalLM, MiniGeminiMetaForCausalLM):
 
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
         self.ar_head = AR_head(self.config, codebook_size=32768, num_codebooks=8)
-
+        self.write_count = 0
         self.post_init()
 
     def get_model(self):
