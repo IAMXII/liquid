@@ -331,11 +331,9 @@ def main(args):
             #     input_chunk = inputs_embeds
 
             seq_len = inputs_embeds.size(1)
-            # position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(0)
-            position_ids = None
+            position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(0)
+            # position_ids = None
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
-            attention_mask[0][0] = False
-            attention_mask[0][257] = False
             # len_input = input_chunk.size(1)
             attention_mask = attention_mask[:, -seq_len:]
             print("attention mask: ", attention_mask)
