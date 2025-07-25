@@ -387,7 +387,7 @@ def main(args):
 
             else:
                 outputs = vqllm.model(
-                    input_ids=input_ids,
+                    input_ids=None,
                     position_ids=position_ids,
                     attention_mask=attention_mask,
                     past_key_values=past_key_values,
