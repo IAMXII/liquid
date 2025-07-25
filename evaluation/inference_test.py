@@ -313,7 +313,7 @@ def main(args):
         num_img_tokens = 256
         generating_image_tokens = False
         image_tokens_remaining = 0
-        total_steps = 1622
+        total_steps = 257
         boi_embed = vqllm.get_model().embed_tokens(boi_token_id)
         eoi_embed = vqllm.get_model().embed_tokens(eoi_token_id)
         is_last_image_embed = False  # 用于标记前一步是否是图像embedding
@@ -380,10 +380,8 @@ def main(args):
                 pred_logits.append(next_token_logits)
                 pred_tokens.append(torch.cat(indices_arhead, dim=1))
                 next_token = torch.stack(pred_tokens, dim=-1)
-                next_embed = predicted_embed
-                image_tokens_remaining -= 1
-                if image_tokens_remaining == 0:
-                    generating_image_tokens = False
+                next_embed = vqllm.model.multi_embedder(next_token)
+                inputs_embeds = next_embed
 
 
             else:
@@ -444,7 +442,7 @@ def main(args):
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
 
             # inputs_embeds = next_embed
-            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
+                inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
             # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
 
