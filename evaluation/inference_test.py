@@ -306,7 +306,7 @@ def main(args):
         )
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [270 * i+1 for i in range(6)]
+        image_insert_pos = [270 * i+1 for i in range(1)]
         # image_insert_pos = []
         boi_token_id = torch.tensor([[7]]).to("cuda")
         eoi_token_id = torch.tensor([[8]]).to("cuda")
@@ -375,7 +375,7 @@ def main(args):
                     # 若不是最后一层 head，则准备下一个嵌入
                     if i_head < num_codebooks - 1:
                         predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
-                        # next_embed = torch.cat([next_embed, predicted_embed], dim=1)
+                        next_embed = torch.cat([next_embed, predicted_embed], dim=1)
 
                 pred_logits.append(next_token_logits)
                 pred_tokens.append(torch.cat(indices_arhead, dim=1))
@@ -495,7 +495,7 @@ def main(args):
         # assert len(boi_pos) == 6, f"Expected 6 <boi> tokens, found {len(boi_pos)}"
         # boi_pos = np.arange(6) * 271+1
         img_logits = []
-        pos_logits = np.arange(6) * 256
+        pos_logits = np.arange(1) * 256
         for pos in pos_logits:
             start = pos
             end = start + 256
@@ -514,7 +514,7 @@ def main(args):
         image_losses = []
         img_loss_l = img_logits.reshape(-1, 4096)
 
-        for i in range(6):
+        for i in range(1):
             start = i * 256
             end = (i + 1) * 256
 
