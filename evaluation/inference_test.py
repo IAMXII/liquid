@@ -331,7 +331,8 @@ def main(args):
             #     input_chunk = inputs_embeds
 
             seq_len = inputs_embeds.size(1)
-            position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(0)
+            # position_ids = torch.arange(seq_len, dtype=torch.long, device=inputs_embeds.device).unsqueeze(0)
+            position_ids = None
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
             attention_mask = attention_mask[:, -seq_len:]
@@ -386,6 +387,7 @@ def main(args):
 
 
             else:
+
                 outputs = vqllm.model(
                     input_ids=None,
                     position_ids=position_ids,
@@ -410,6 +412,7 @@ def main(args):
                 if i in [x - 1 for x in image_insert_pos]:
                     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
                 elif i in [x + 256 for x in image_insert_pos]:
+
                     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
                 print("next token: ", next_token.item())
                 next_embed = vqllm.get_model().embed_tokens(next_token)
