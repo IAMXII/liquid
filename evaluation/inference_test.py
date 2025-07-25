@@ -380,7 +380,7 @@ def main(args):
                 pred_logits.append(next_token_logits)
                 pred_tokens.append(torch.cat(indices_arhead, dim=1))
                 next_token = torch.stack(pred_tokens, dim=-1)
-                next_embed = vqllm.model.multi_embedder(next_token)
+                next_embed = vqllm.model.multi_embedder(torch.cat(indices_arhead, dim=1))
                 inputs_embeds = next_embed
 
 
