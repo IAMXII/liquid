@@ -104,7 +104,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
                  ", now predict the next frames, their waypoints are " + \
                  ", ".join([format_wp(wp) for wp in future_wps])
 
-    gpt_text = ""
+    gpt_text = "<boi>"
 
     conv = conversation_lib.conv_templates["gemma"].copy()
     conv.append_message(conv.roles[0], human_text)
@@ -249,6 +249,8 @@ def main(args):
     # input_ids, attention_mask = build_vqa_inference_input(tokenizer, sources)
 
     input_ids, labels = build_vqa_pair_with_vqcode(tokenizer, sources)
+    input_ids = input_ids[:,:-1]
+    labels = labels[:,:-1]
     known_vqcodes = [torch.tensor(json.loads(s)) for s in sources["known_vqcodes"]]
     future_vqcodes = [torch.tensor(json.loads(s)) for s in sources["future_vqcodes"]]
     # print(known_vqcodes[0])
@@ -339,83 +341,83 @@ def main(args):
             print("attention mask: ", attention_mask)
             print("input embeds: ",inputs_embeds.shape)
             # if in_image_range:
-            #     outputs = vqllm.T2I_forward_withcache(
-            #         input_ids=input_ids,
-            #         position_ids=position_ids,
-            #         attention_mask=attention_mask,
-            #         past_key_values=past_key_values,
-            #         input_multi_ids=None,
-            #         inputs_embeds=inputs_embeds,
-            #         return_dict=True,
-            #         output_attentions=False,
-            #         output_hidden_states=False,
-            #     )
-            #     # past_key_values = outputs['past_key_values']
-            #     print(outputs.keys())
-            #
-            #     next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
-            #
-            #     # next_embed_t = next_embed
-            #     indices_arhead = []
-            #     # is_last_image_embed = True  # 默认下一步是图像
-            #
-            #
-            #     for i_head in range(num_codebooks):
-            #         ar_next_embed = vqllm.ar_head(
-            #             inputs_embeds=next_embed,
-            #             use_cache=False,
-            #             output_attentions=False,
-            #             output_hidden_states=False,
-            #             return_dict=False,
-            #         )
-            #         next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
-            #         # print("next_token_logits", next_token_logits)
-            #         next_token, next_prob = sample(next_token_logits, **sampling_kwargs)
-            #         indices_arhead.append(next_token)
-            #
-            #         # 若不是最后一层 head，则准备下一个嵌入
-            #         if i_head < num_codebooks - 1:
-            #             predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
-            #             next_embed = torch.cat([next_embed, predicted_embed], dim=1)
-            #
-            #     pred_logits.append(next_token_logits)
-            #     pred_tokens.append(torch.cat(indices_arhead, dim=1))
-            #     tmp = []
-            #     tmp.append(torch.cat(indices_arhead, dim=1))
-            #     next_token = torch.stack(tmp, dim=-1)
-            #     next_embed = vqllm.model.multi_embedder(next_token)
-            #     # inputs_embeds = next_embed
-            #
-            #
-            # else:
-
-            outputs = vqllm.model(
-                input_ids=None,
+            outputs = vqllm.T2I_forward_withcache(
+                input_ids=input_ids,
                 position_ids=position_ids,
                 attention_mask=attention_mask,
                 past_key_values=past_key_values,
+                input_multi_ids=None,
                 inputs_embeds=inputs_embeds,
                 return_dict=True,
                 output_attentions=False,
                 output_hidden_states=False,
             )
             # past_key_values = outputs['past_key_values']
-            print("output:",len(outputs))
-            hidden_states = outputs[0]
-            logits = vqllm.lm_head(hidden_states)
-            logits = logits.float()
-            logits = logits[:,-1,:]
-            logits = logits[:, :256000]
-            probs = F.softmax(logits, dim=-1)
-            max_prob, max_idx = torch.max(probs, dim=-1)
+            print(outputs.keys())
 
-            next_token = torch.tensor([[max_idx]]).to("cuda")
-            # if i in [x - 1 for x in image_insert_pos]:
-            #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
-            # elif i in [x + 256 for x in image_insert_pos]:
-            #     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
-            print("next token: ", next_token.item())
-            next_embed = vqllm.get_model().embed_tokens(next_token)
+            next_embed = outputs['last_hidden_state'][:, -1:, :]  # 下一个 token embedding
+
+            # next_embed_t = next_embed
+            indices_arhead = []
+            # is_last_image_embed = True  # 默认下一步是图像
+
+
+            for i_head in range(num_codebooks):
+                ar_next_embed = vqllm.ar_head(
+                    inputs_embeds=next_embed,
+                    use_cache=False,
+                    output_attentions=False,
+                    output_hidden_states=False,
+                    return_dict=False,
+                )
+                next_token_logits = vqllm.ar_head.linear_head(ar_next_embed[0])
+                # print("next_token_logits", next_token_logits)
+                next_token, next_prob = sample(next_token_logits, **sampling_kwargs)
+                indices_arhead.append(next_token)
+
+                # 若不是最后一层 head，则准备下一个嵌入
+                if i_head < num_codebooks - 1:
+                    predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
+                    next_embed = torch.cat([next_embed, predicted_embed], dim=1)
+
+            pred_logits.append(next_token_logits)
+            pred_tokens.append(torch.cat(indices_arhead, dim=1))
+            #     tmp = []
+            #     tmp.append(torch.cat(indices_arhead, dim=1))
+            #     next_token = torch.stack(tmp, dim=-1)
+            next_embed = vqllm.model.multi_embedder(pred_tokens)
+            #     # inputs_embeds = next_embed
+            #
+            #
+            # else:
+
+            # outputs = vqllm.model(
+            #     input_ids=None,
+            #     position_ids=position_ids,
+            #     attention_mask=attention_mask,
+            #     past_key_values=past_key_values,
+            #     inputs_embeds=inputs_embeds,
+            #     return_dict=True,
+            #     output_attentions=False,
+            #     output_hidden_states=False,
+            # )
+            # # past_key_values = outputs['past_key_values']
+            # print("output:",len(outputs))
+            # hidden_states = outputs[0]
+            # logits = vqllm.lm_head(hidden_states)
+            # logits = logits.float()
+            # logits = logits[:,-1,:]
+            # logits = logits[:, :256000]
+            # probs = F.softmax(logits, dim=-1)
+            # max_prob, max_idx = torch.max(probs, dim=-1)
+            #
+            # next_token = torch.tensor([[max_idx]]).to("cuda")
+            # # if i in [x - 1 for x in image_insert_pos]:
+            # #     next_token = torch.tensor([[7]]).to("cuda")  # <boi>
+            # # elif i in [x + 256 for x in image_insert_pos]:
+            # #     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
+            # print("next token: ", next_token.item())
+            # next_embed = vqllm.get_model().embed_tokens(next_token)
                 # print("logits", logits.shape)
                 # with open("input_ids.txt", "w", encoding="utf-8") as f:
                 #     for token_id in logits:
@@ -443,8 +445,8 @@ def main(args):
             # fake id for cache & extend full embedding序列
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
 
-            # inputs_embeds = next_embed
-            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
+            inputs_embeds = next_embed
+            # inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
             # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
 
