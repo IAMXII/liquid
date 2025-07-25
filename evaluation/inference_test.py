@@ -336,6 +336,7 @@ def main(args):
             attention_mask = new_input_ids.ne(tokenizer.pad_token_id)
             # len_input = input_chunk.size(1)
             attention_mask = attention_mask[:, -seq_len:]
+            print("attention mask: ", attention_mask)
             print("input embeds: ",inputs_embeds.shape)
             # if in_image_range:
             #     outputs = vqllm.T2I_forward_withcache(
