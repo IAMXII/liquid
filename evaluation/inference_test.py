@@ -375,7 +375,7 @@ def main(args):
                     # 若不是最后一层 head，则准备下一个嵌入
                     if i_head < num_codebooks - 1:
                         predicted_embed = vqllm.ar_head.codebooks[i_head](next_token)
-                        next_embed = torch.cat([next_embed, predicted_embed], dim=1)
+                        # next_embed = torch.cat([next_embed, predicted_embed], dim=1)
 
                 pred_logits.append(next_token_logits)
                 pred_tokens.append(torch.cat(indices_arhead, dim=1))
