@@ -380,7 +380,7 @@ def main(args):
                 pred_logits.append(next_token_logits)
                 pred_tokens.append(torch.cat(indices_arhead, dim=1))
                 next_token = torch.stack(pred_tokens, dim=-1)
-                next_embed = vqllm.get_model().multi_embedder(torch.cat(indices_arhead, dim=1))
+                next_embed = predicted_embed
                 image_tokens_remaining -= 1
                 if image_tokens_remaining == 0:
                     generating_image_tokens = False
