@@ -381,7 +381,7 @@ def main(args):
                 pred_tokens.append(torch.cat(indices_arhead, dim=1))
                 next_token = torch.stack(pred_tokens, dim=-1)
                 next_embed = vqllm.model.multi_embedder(torch.cat(indices_arhead, dim=1))
-                inputs_embeds = next_embed
+                # inputs_embeds = next_embed
 
 
             else:
@@ -442,7 +442,7 @@ def main(args):
             # fake_id = torch.zeros_like(next_embed).to(next_embed.device)
 
             # inputs_embeds = next_embed
-                inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
+            inputs_embeds = torch.cat((inputs_embeds, next_embed), dim=1)   ### liuwei
             # 更新 cache 与输入
             model_kwargs["cache_position"] = torch.arange(inputs_embeds.shape[1], device="cuda:0")
 
