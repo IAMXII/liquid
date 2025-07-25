@@ -459,7 +459,7 @@ def main(args):
                     next_token = torch.tensor([[8]]).to("cuda")  # <eoi>
                     is_last_image_embed = False
                 else:
-                    next_token = torch.tensor([[0]]).to("cuda")
+                    next_token = torch.tensor([[10000]]).to("cuda")
                 new_input_ids = torch.cat([new_input_ids, next_token], dim=-1)
 
             model_kwargs = vqllm._update_model_kwargs_for_generation(
