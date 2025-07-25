@@ -384,8 +384,8 @@ def main(args):
             pred_tokens.append(torch.cat(indices_arhead, dim=1))
             #     tmp = []
             #     tmp.append(torch.cat(indices_arhead, dim=1))
-            #     next_token = torch.stack(tmp, dim=-1)
-            next_embed = vqllm.model.multi_embedder(pred_tokens)
+            next_token_ = torch.stack(pred_tokens, dim=-1)
+            next_embed = vqllm.model.multi_embedder(next_token_)
             #     # inputs_embeds = next_embed
             #
             #
