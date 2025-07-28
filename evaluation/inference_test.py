@@ -308,7 +308,7 @@ def main(args):
         )
         pred_tokens = []
         pred_logits = []
-        image_insert_pos = [270 * i+1 for i in range(1)]
+        image_insert_pos = [270 * i for i in range(1)]
         # image_insert_pos = []
         boi_token_id = torch.tensor([[7]]).to("cuda")
         eoi_token_id = torch.tensor([[8]]).to("cuda")

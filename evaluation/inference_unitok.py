@@ -86,7 +86,7 @@ def build_vqa_pair_with_vqcode(tokenizer, sources):
     labels = input_ids.clone()
     labels[:instruction_len] = IGNORE_INDEX
 
-    return input_ids.unsqueeze(0).to("cuda"), labels.unsqueeze(0).to("cuda")
+    return input_ids.unsqueeze(0).to("cuda"), labels.unsqueeze(0).to("cuda")  ### 这个地方的label不重要
 
 def center_crop_image(ori_image, tgt_width=512, tgt_height=512):
     Width, Height = ori_image.size
@@ -103,22 +103,6 @@ def center_crop_image(ori_image, tgt_width=512, tgt_height=512):
     return input_image
 
 
-# def find_all_linear_names(model):
-#     cls = torch.nn.Linear
-#     lora_module_names = set()
-#     multimodal_keywords = ['mm_projector', 'vision_tower', 'vision_resampler', 'vlm_uni']
-#     for name, module in model.named_modules():
-#         if any(mm_keyword in name for mm_keyword in multimodal_keywords):
-#             continue
-#         if isinstance(module, cls):
-#             names = name.split('.')
-#             lora_module_names.add(names[0] if len(names) == 1 else names[-1])
-#
-#     if 'lm_head' in lora_module_names:  # needed for 16-bit
-#         lora_module_names.remove('lm_head')
-#     return list(lora_module_names)
-
-
 def main(args):
     num_codebooks = 8
     temperature = args.temperature
@@ -133,13 +117,6 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(model_id, padding_side='left')
     ori_vocab_size = len(tokenizer)
 
-    # vqllm = AutoModelForCausalLM.from_pretrained(
-    #     model_id,
-    #     attn_implementation='flash_attention_2',
-    #     torch_dtype=torch.bfloat16,
-    #     load_in_8bit=args.load_8bit,
-    # )
-
     vqllm = MiniGeminiGemmaForCausalLM.from_pretrained(  ### liuwei
         # model = MiniGeminiLlamaForCausalLM.from_pretrained(
         model_id,
@@ -151,9 +128,6 @@ def main(args):
     if not args.load_8bit:
         vqllm = vqllm.to('cuda')
 
-    # vqgan_cfg_path = "model/vqgan_imagenet_f16_1024/configs/model.yaml"
-    # vqgan_ckpt_path = "model/vqgan_imagenet_f16_1024/ckpts/last.ckpt"
-    # image_tokenizer = ImageTokenizer(cfg_path=vqgan_cfg_path, ckpt_path=vqgan_ckpt_path, device="cuda:0")
     unitok_path = "../unitok/unitok_tokenizer/unitok_tokenizer.pth"
     print('loading vq model ...')
     ckpt = torch.load(unitok_path, map_location='cpu')
@@ -204,7 +178,7 @@ def main(args):
     new_input_ids = torch.tensor([new_ids], dtype=input_ids.dtype, device=input_ids.device)
     with torch.no_grad():
         sampling_kwargs = {'temperature': temperature, 'top_k': top_K, 'top_p': top_P, 'sample_logits': False}
-        cur_len = input_ids.shape[1]+256*3
+        cur_len = input_ids.shape[1]
         model_kwargs = {'attention_mask': attention_mask, 'use_cache': True}
         model_kwargs["cache_position"] = torch.arange(cur_len, device="cuda:0")
 
